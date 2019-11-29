@@ -4,7 +4,7 @@ from dxball import play_game
 network = []
 max_playtime = 10  # seconds
 display_game = 1
-fps = 50
+fps = 35
 max_nbr_frames = 4000  # some arbitrary number
 course_nbr = 1
 

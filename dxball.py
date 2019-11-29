@@ -1,9 +1,7 @@
-# %%
-import sys
+# %% DX-ball
 import pygame
 import numpy as np
 import time
-from create_level import create_level
 from Network import Network
 
 SCREEN_SIZE = 640,480
@@ -91,7 +89,7 @@ class Bricka:
     def check_input(self,course_nbr):  # Edit this to take input from neural network
         keys=pygame.key.get_pressed()
         self.frames_run += 1
-        print('frames_run=',self.frames_run)
+        #print('frames_run=',self.frames_run)
         
         boost_factor = 1  # 1 => no effect
         
@@ -107,15 +105,18 @@ class Bricka:
         network = Network(shape)
         
         output = Network.prop_forward(network, inputs)
-        if output < 0.5:
-            self.paddle.left-= self.padVelocity*boost_factor
-            if self.paddle.left < 0:
-                self.paddle.left = 0
-                
-        elif output > 0.5:
-            self.paddle.left += self.padVelocity*boost_factor
-            if self.paddle.left > MAX_PADDLE_X:
-                self.paddle.left = MAX_PADDLE_X
+        
+        use_network = 0
+        if use_network:
+            if output < 0.5:
+                self.paddle.left-= self.padVelocity*boost_factor
+                if self.paddle.left < 0:
+                    self.paddle.left = 0
+                    
+            elif output > 0.5:
+                self.paddle.left += self.padVelocity*boost_factor
+                if self.paddle.left > MAX_PADDLE_X:
+                    self.paddle.left = MAX_PADDLE_X
   
         # Below: possible to assign own inputs as well, so keep these for the 
         # time being.
@@ -163,6 +164,34 @@ class Bricka:
   
         if self.ball.colliderect(self.paddle):
             self.ball.top=PADDLE_Y-BALL_DIAMETER
+            
+            print("ball left=",self.ball.left)
+            print("paddle left=",self.paddle.left)
+            print("diff",self.ball.left-self.paddle.left)
+            
+            # Dynamic hits /Gustaf
+            
+            
+            diff = self.ball.left - self.paddle.left
+            
+            phi = np.pi*(1-diff/PADDLE_WIDTH)
+            
+            v = np.linalg.norm(self.ball_vel)
+            
+            self.ball_vel[0] = v*np.cos(phi)
+            self.ball_vel[1] = v*np.sin(phi)
+            
+            if self.ball_vel[1] == 0:
+                self.ball_vel[1] = 1
+            
+#            
+#            if diff < (1/2)*PADDLE_WIDTH:
+#                self.ball_vel[0] = -np.abs(self.ball_vel[0])
+#                
+#            elif diff > (1/2)*PADDLE_WIDTH:
+#                self.ball_vel[0] = +np.abs(self.ball_vel[0])
+                
+            
             self.ball_vel[1]=-self.ball_vel[1]
         elif self.ball.top > self.paddle.top:
             self.lives-=1
