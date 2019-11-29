@@ -3,7 +3,9 @@ import sys
 import pygame
 import numpy as np
 import time
-from CreateLevel import CreateLevel
+from create_level import create_level
+from Network import Network
+
 SCREEN_SIZE = 640,480
 
 #object dimensions
@@ -71,7 +73,7 @@ class Bricka:
         self.ball_vel[1] += self.ball_vel[0]/2
         #print(self.ball_vel)
         const = 0.1*self.nbrLevelsCleared
-        CreateLevel(const)
+        create_level(const)
         matrix = 'Levels/level.csv'
         level = np.genfromtxt(matrix)   
         level_width = len(level[0])
@@ -99,7 +101,7 @@ class Bricka:
     
     def get_position(self):
         
-        return self.ball
+        return self.ball.left, self.ball.top
 
     def check_input(self):  # Edit this to take input from neural network
         keys=pygame.key.get_pressed()
@@ -108,20 +110,38 @@ class Bricka:
         #output = -1+2*np.random.rand()
         self.framesRun += 1
         
-        randomize = 0
-        if np.remainder(self.framesRun,1) == 0 and randomize:
+        #if np.remainder(self.framesRun,1) == 0:
         
-            boostFactor = 1
-            output = 0.5  # => no movement
-            
-            if output < 0.33:
-                self.paddle.left-= self.padVelocity*boostFactor
-                if self.paddle.left < 0:
-                    self.paddle.left = 0
-            elif output > 0.66:
-                self.paddle.left += self.padVelocity*boostFactor
-                if self.paddle.left > MAX_PADDLE_X:
-                    self.paddle.left = MAX_PADDLE_X
+        boostFactor = 1
+        
+        x = [self.ball.left, self.ball.top]
+        v = self.ball_vel
+        inputs = [x[0],x[1],v[0],v[1]]
+        
+        #print(inputs)
+        
+        nbrInputs = 4
+        nbrHidden = 3
+        nbrOutputs = 1
+        
+        shape = [nbrInputs, nbrHidden, nbrOutputs]
+        network = Network(shape)
+        print("network=")
+        network.print_network()
+        
+        output = Network.prop_forward(network, inputs)
+        print("op=",output)
+        #print(output)
+        
+        if output < 0.5:
+            self.paddle.left-= self.padVelocity*boostFactor
+            if self.paddle.left < 0:
+                self.paddle.left = 0
+                
+        elif output > 0.5:
+            self.paddle.left += self.padVelocity*boostFactor
+            if self.paddle.left > MAX_PADDLE_X:
+                self.paddle.left = MAX_PADDLE_X
   
         # Below: possible to assign own inputs as well, so keep these for the 
         # time being.
@@ -191,19 +211,19 @@ class Bricka:
             self.screen.blit(font_surface,(x,y))
             
     
-    def run(self, playtime, run):
+    def run(self, max_playtime, course, display_game):
         while 1:
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
-                    exit()
+                    #exit()
                 
             self.clock.tick(50)
             self.screen.fill(BLACK)
             self.check_input()
             t1 = time.time()
-            
-            if t1 - self.t0 > playtime:
+            playtime = t1 - self.t0
+            if playtime > max_playtime:
                 return self.score, playtime
     
             if self.state==STATE_PLAYING:
@@ -226,13 +246,14 @@ class Bricka:
     
             self.show_stats()
     
-            pygame.display.flip()
+            if display_game:
+                pygame.display.flip()
         
 
     
-def play_game(network,course,max_playtime):
+def play_game(network,course,max_playtime,display_game):
     b = Bricka()
-    score, playtime = b.run(max_playtime,course)
+    score, playtime = b.run(max_playtime,course,display_game)
     
     return score, playtime
 
