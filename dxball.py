@@ -112,7 +112,7 @@ class Bricka:
         
         #if np.remainder(self.framesRun,1) == 0:
         
-        boostFactor = 1
+        boostFactor = 10
         
         x = [self.ball.left, self.ball.top]
         v = self.ball_vel
@@ -155,7 +155,7 @@ class Bricka:
             if self.paddle.left > MAX_PADDLE_X:
                 self.paddle.left = MAX_PADDLE_X
   
-        if keys[pygame.K_SPACE] and self.state== STATE_BALL_IN_PADDLE:
+        if self.state== STATE_BALL_IN_PADDLE:
             self.ball_vel=[5,-5]
             self.state=STATE_PLAYING
         elif keys[pygame.K_RETURN] and (self.state==STATE_GAME_OVER):
@@ -211,14 +211,14 @@ class Bricka:
             self.screen.blit(font_surface,(x,y))
             
     
-    def run(self, max_playtime, course, display_game):
+    def run(self, max_playtime, course, display_game, fps):
         while 1:
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
                     #exit()
                 
-            self.clock.tick(50)
+            self.clock.tick(fps)
             self.screen.fill(BLACK)
             self.check_input()
             t1 = time.time()
@@ -232,7 +232,7 @@ class Bricka:
             elif self.state==STATE_BALL_IN_PADDLE:
                 self.ball.left=self.paddle.left+ self.paddle.width/2
                 self.ball.top=self.paddle.top-self.ball.height
-                self.show_message("Press space to launch the ball")
+                #self.show_message("Press space to launch the ball")
             elif self.state==STATE_GAME_OVER:
                 playtime = time.time() - self.t0
                 return self.score, playtime
