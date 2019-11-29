@@ -26,6 +26,7 @@ BLACK=(0,0,0)
 WHITE=(255,255,255)
 BLUE=(0,0,255)
 BRICK_COLOR=(200,200,200)
+RED = (255,0,0)
 
 #STATE CONSTANTS
 STATE_BALL_IN_PADDLE=0
@@ -56,13 +57,15 @@ class Bricka:
         self.padVelocity = 12
         self.nbrLevelsCleared = 0
         self.state=STATE_BALL_IN_PADDLE
-        self.brick_state = []
+        self.spawn_prob = 0.5
         
+        self.crate= []
+        #pygame.Rect(self.ball.left,self.ball.top,20,20)
         self.paddle= pygame.Rect(300,PADDLE_Y,PADDLE_WIDTH,PADDLE_HEIGHT)
         self.ball=   pygame.Rect(300,PADDLE_Y-BALL_DIAMETER,BALL_DIAMETER,BALL_DIAMETER)
         
         
-        v = 3
+        v = 5
         self.ball_vel=[v,-v]
         self.create_bricks(course_nbr)
   
@@ -75,16 +78,26 @@ class Bricka:
         level_height = len(level)
         y_ofs=25
         self.bricks=[]
+        self.red_bricks=[]
+        self.blue_bricks=[]
         for i in range(level_height):
             x_ofs=25
             for j in range(level_width):
-                if level[i,j] != 0:
+                if level[i,j] == 1:
                     self.bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
+                elif level[i,j] == 2:
+                    self.red_bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
+                elif level[i,j] == 3:
+                    self.blue_bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
                 x_ofs += BRICK_WIDTH + 10
             y_ofs += BRICK_HEIGHT+5
     def draw_bricks(self):
         for brick in self.bricks:
             pygame.draw.rect(self.screen,BRICK_COLOR,brick)
+        for brick in self.red_bricks:
+            pygame.draw.rect(self.screen,RED,brick)
+        for brick in self.blue_bricks:
+            pygame.draw.rect(self.screen,(0,0,255),brick)
     
     def check_input(self,course_nbr):  # Edit this to take input from neural network
         keys=pygame.key.get_pressed()
@@ -131,7 +144,8 @@ class Bricka:
                 self.paddle.left = MAX_PADDLE_X
   
         if self.state== STATE_BALL_IN_PADDLE:
-            self.ball_vel=[5,-5]
+            r = np.random.rand()
+            self.ball_vel=[5*np.sign(r),-5*np.sign(r)]
             self.state=STATE_PLAYING
         elif keys[pygame.K_RETURN] and (self.state==STATE_GAME_OVER):
             self.init_game(course_nbr)
@@ -150,13 +164,32 @@ class Bricka:
         if self.ball.top < 0:
             self.ball.top=0
             self.ball_vel[1]=-self.ball_vel[1]
-
+        
+    
+    
     def handle_collisions(self):
         for brick in self.bricks:
             if self.ball.colliderect(brick):
-                self.score +=3
+                self.score +=10
                 self.ball_vel[1]=-self.ball_vel[1]
                 self.bricks.remove(brick)
+                
+                break
+                    
+        for brick in self.red_bricks:
+            if self.ball.colliderect(brick):
+                self.score +=50
+                self.ball_vel[1]=-1.10*self.ball_vel[1]
+                self.red_bricks.remove(brick)
+                
+                break
+            
+        for brick in self.blue_bricks:
+            if self.ball.colliderect(brick):
+                self.score +=100
+                self.ball_vel[1]=-1.25*self.ball_vel[1]
+                self.blue_bricks.remove(brick)
+                
                 break
             
         if len(self.bricks)==0:
@@ -179,20 +212,20 @@ class Bricka:
             v = np.linalg.norm(self.ball_vel)
             
             self.ball_vel[0] = v*np.cos(phi)
-            self.ball_vel[1] = v*np.sin(phi)
+            self.ball_vel[1] = -1.025*self.ball_vel[1]  # increasing y-speed with 2.5 % for each hit
+                
+            q = -1 + 2*np.random.rand()
+            s = np.sign(q)
             
-            if self.ball_vel[1] == 0:
-                self.ball_vel[1] = 1
-            
-#            
-#            if diff < (1/2)*PADDLE_WIDTH:
-#                self.ball_vel[0] = -np.abs(self.ball_vel[0])
-#                
-#            elif diff > (1/2)*PADDLE_WIDTH:
-#                self.ball_vel[0] = +np.abs(self.ball_vel[0])
+            if self.ball_vel[0] == 0:
+                self.ball_vel[0] = -s
                 
             
-            self.ball_vel[1]=-self.ball_vel[1]
+            
+            if np.abs(self.ball_vel[0]) < 0.1:
+                print("xv = 0")
+                self.ball_vel[0] = 10
+                
         elif self.ball.top > self.paddle.top:
             self.lives-=1
             if self.lives>0:
@@ -202,7 +235,7 @@ class Bricka:
 
     def show_stats(self):
         if self.font:
-            font_surface=self.font.render("SCORE:" + str(self.score)+"LIVES:"+str(self.lives),False,WHITE)
+            font_surface=self.font.render("Score:" + str(self.score)+" Time:"+str(np.floor(self.frames_run/10)),False,WHITE)
             self.screen.blit(font_surface,(205,5))
 
     def show_message(self,message):
