@@ -68,8 +68,7 @@ class Bricka:
   
     def create_bricks(self):
         self.ball_vel[0] += self.ball_vel[0]/2
-        self.ball_vel[1] += self.ball_v
-    el[0]/2
+        self.ball_vel[1] += self.ball_vel[0]/2
         #print(self.ball_vel)
         const = 0.1*self.nbrLevelsCleared
         CreateLevel(const)
@@ -227,7 +226,7 @@ class Bricka:
     
             self.show_stats()
     
-            #pygame.display.flip()
+            pygame.display.flip()
         
 
     
