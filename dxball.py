@@ -36,7 +36,7 @@ STATE_GAME_OVER=3
 
 
 class Bricka:
-    def __init__(self):
+    def __init__(self,course_nbr):
         pygame.init()
         self.screen=pygame.display.set_mode(SCREEN_SIZE)
         pygame.display.set_caption("dx ball(Python GameMakers)")
@@ -47,12 +47,12 @@ class Bricka:
           self.font=pygame.font.Font(None,30)
         else:
           self.font=None
-    
-        self.init_game()
+          
+        self.init_game(course_nbr)
         
-    def init_game(self):
+    def init_game(self,course_nbr):
         self.t0 = time.time()
-        self.framesRun=0
+        self.frames_run=0
         self.lives=1
         self.score=0
         self.padVelocity = 12
@@ -64,17 +64,14 @@ class Bricka:
         self.ball=   pygame.Rect(300,PADDLE_Y-BALL_DIAMETER,BALL_DIAMETER,BALL_DIAMETER)
         
         
-        v = 7
+        v = 3
         self.ball_vel=[v,-v]
-        self.create_bricks()
+        self.create_bricks(course_nbr)
   
-    def create_bricks(self):
+    def create_bricks(self,course_nbr):
         self.ball_vel[0] += self.ball_vel[0]/2
         self.ball_vel[1] += self.ball_vel[0]/2
-        #print(self.ball_vel)
-        const = 0.1*self.nbrLevelsCleared
-        create_level(const)
-        matrix = 'Levels/level.csv'
+        matrix = 'Levels/level'+str(course_nbr)+'.csv'
         level = np.genfromtxt(matrix)   
         level_width = len(level[0])
         level_height = len(level)
@@ -91,34 +88,16 @@ class Bricka:
         for brick in self.bricks:
             pygame.draw.rect(self.screen,BRICK_COLOR,brick)
     
-    def get_brick_state(self):  # TODO
-            
-        return self.brick_state
-    
-    def get_velocity(self):
-        
-        return self.ball_vel
-    
-    def get_position(self):
-        
-        return self.ball.left, self.ball.top
-
-    def check_input(self):  # Edit this to take input from neural network
+    def check_input(self,course_nbr):  # Edit this to take input from neural network
         keys=pygame.key.get_pressed()
+        self.frames_run += 1
+        print('frames_run=',self.frames_run)
         
-        # FEED FOWARD HERE AND RETURN output
-        #output = -1+2*np.random.rand()
-        self.framesRun += 1
-        
-        #if np.remainder(self.framesRun,1) == 0:
-        
-        boostFactor = 10
+        boost_factor = 1  # 1 => no effect
         
         x = [self.ball.left, self.ball.top]
         v = self.ball_vel
         inputs = [x[0],x[1],v[0],v[1]]
-        
-        #print(inputs)
         
         nbrInputs = 4
         nbrHidden = 3
@@ -126,20 +105,15 @@ class Bricka:
         
         shape = [nbrInputs, nbrHidden, nbrOutputs]
         network = Network(shape)
-        print("network=")
-        network.print_network()
         
         output = Network.prop_forward(network, inputs)
-        print("op=",output)
-        #print(output)
-        
         if output < 0.5:
-            self.paddle.left-= self.padVelocity*boostFactor
+            self.paddle.left-= self.padVelocity*boost_factor
             if self.paddle.left < 0:
                 self.paddle.left = 0
                 
         elif output > 0.5:
-            self.paddle.left += self.padVelocity*boostFactor
+            self.paddle.left += self.padVelocity*boost_factor
             if self.paddle.left > MAX_PADDLE_X:
                 self.paddle.left = MAX_PADDLE_X
   
@@ -159,7 +133,7 @@ class Bricka:
             self.ball_vel=[5,-5]
             self.state=STATE_PLAYING
         elif keys[pygame.K_RETURN] and (self.state==STATE_GAME_OVER):
-            self.init_game()
+            self.init_game(course_nbr)
 
     def move_ball(self):
         self.ball.left += self.ball_vel[0]
@@ -183,9 +157,9 @@ class Bricka:
                 self.ball_vel[1]=-self.ball_vel[1]
                 self.bricks.remove(brick)
                 break
-        if len(self.bricks)<5:
-            self.nbrLevelsCleared += 1
-            self.create_bricks()
+            
+        if len(self.bricks)==0:
+            self.state=STATE_GAME_OVER
   
         if self.ball.colliderect(self.paddle):
             self.ball.top=PADDLE_Y-BALL_DIAMETER
@@ -211,20 +185,18 @@ class Bricka:
             self.screen.blit(font_surface,(x,y))
             
     
-    def run(self, max_playtime, course, display_game, fps):
+    def run(self,network,course_nbr,max_playtime,display_game,fps,max_nbr_frames):
         while 1:
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
-                    #exit()
-                
+                    
             self.clock.tick(fps)
             self.screen.fill(BLACK)
-            self.check_input()
-            t1 = time.time()
-            playtime = t1 - self.t0
-            if playtime > max_playtime:
-                return self.score, playtime
+            self.check_input(course_nbr)
+            
+            if self.frames_run > max_nbr_frames:
+                self.state = STATE_GAME_OVER
     
             if self.state==STATE_PLAYING:
                 self.move_ball()
@@ -234,8 +206,8 @@ class Bricka:
                 self.ball.top=self.paddle.top-self.ball.height
                 #self.show_message("Press space to launch the ball")
             elif self.state==STATE_GAME_OVER:
-                playtime = time.time() - self.t0
-                return self.score, playtime
+                print("game ran for ", self.frames_run, " frames")
+                return self.score, self.frames_run
             self.draw_bricks()
     
             #draw paddle
@@ -251,11 +223,11 @@ class Bricka:
         
 
     
-def play_game(network,course,max_playtime,display_game):
-    b = Bricka()
-    score, playtime = b.run(max_playtime,course,display_game)
+def play_game(network,course_nbr,max_playtime,display_game,fps,max_nbr_frames):
+    b = Bricka(course_nbr)
+    score, frames_run = b.run(network,course_nbr,max_playtime,display_game,fps,max_nbr_frames)
     
-    return score, playtime
+    return score, frames_run
 
 #%%
 #

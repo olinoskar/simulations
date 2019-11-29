@@ -1,19 +1,13 @@
 import numpy as np
 
-def create_level(const): 
+def create_level(level_nbr): 
     
-    A = np.random.rand(7,12) + const + 0.2
+    A = np.random.rand(7,12) + 0.2
     A = np.floor(A)
     
-    filename = 'Levels/level.csv'   
+    filename = 'Levels/level'+str(level_nbr)+'.csv'   
     with open(filename, "w") as f:
         np.savetxt(f,A)
-        
-    #filename = 'ArchivedLevels/level.csv'        
-    #with open(filename, "w") as f:
-    #np.savetxt(f,A)
-        
-#%% Read and print
-#data = np.genfromtxt(filename)
-#print(data)
 
+
+#create_level(5)

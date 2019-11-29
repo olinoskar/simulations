@@ -2,12 +2,13 @@
 from dxball import play_game
 
 network = []
-course = []
 max_playtime = 10  # seconds
 display_game = 1
-fps = 100
+fps = 50
+max_nbr_frames = 4000  # some arbitrary number
+course_nbr = 1
 
-score, playtime = play_game(network,course,max_playtime,display_game,fps)
-time_str = "{:.2f}".format(playtime)
-print("Score = " + str(score) + " after " + time_str + " seconds played.") 
+score, frames_run = play_game(network,course_nbr,max_playtime,display_game,fps,max_nbr_frames)
+frames_str = "{:.2f}".format(frames_run)
+print("Score = " + str(score) + " after " + frames_str + " frames played.") 
 

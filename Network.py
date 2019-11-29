@@ -15,8 +15,6 @@ class Network:
         self.W=[]
         self.Theta=[]
         for l in range(self.L-1):
-            #print("shape")
-            #print(shape[l])
             self.W.append(np.random.normal(loc=0,scale=1/np.sqrt(shape[l]),
                                        size=(shape[l+1],shape[l])))
             self.Theta.append( np.zeros(shape = (shape[l+1]) ) )
@@ -36,13 +34,8 @@ class Network:
             #print(self.W[l])
             #print(V)
             #print(self.Theta[l])
-            print("V innan =",V)
-            print("W[l]",self.W[l])
             b = np.dot(self.W[l], V) - self.Theta[l]
-
-            #V=func.sigmoid(b)
             V = b
-            print("V efter =",V)
         return V
 
 
