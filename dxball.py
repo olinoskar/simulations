@@ -54,10 +54,11 @@ class Bricka:
         self.frames_run=0
         self.lives=1
         self.score=0
-        self.padVelocity = 12
+        self.padVelocity = 18
         self.nbrLevelsCleared = 0
         self.state=STATE_BALL_IN_PADDLE
         self.spawn_prob = 0.5
+        self.use_network = 0
         
         self.crate= []
         #pygame.Rect(self.ball.left,self.ball.top,20,20)
@@ -115,12 +116,10 @@ class Bricka:
         nbrOutputs = 1
         
         shape = [nbrInputs, nbrHidden, nbrOutputs]
-        network = Network(shape)
-        
+        network = Network(shape)        
         output = Network.prop_forward(network, inputs)
-        
-        use_network = 0
-        if use_network:
+            
+        if self.use_network:
             if output < 0.5:
                 self.paddle.left-= self.padVelocity*boost_factor
                 if self.paddle.left < 0:
@@ -179,7 +178,7 @@ class Bricka:
         for brick in self.red_bricks:
             if self.ball.colliderect(brick):
                 self.score +=50
-                self.ball_vel[1]=-1.10*self.ball_vel[1]
+                self.ball_vel[1]=-1.025*self.ball_vel[1]
                 self.red_bricks.remove(brick)
                 
                 break
@@ -187,7 +186,7 @@ class Bricka:
         for brick in self.blue_bricks:
             if self.ball.colliderect(brick):
                 self.score +=100
-                self.ball_vel[1]=-1.25*self.ball_vel[1]
+                self.ball_vel[1]=-1.10*self.ball_vel[1]
                 self.blue_bricks.remove(brick)
                 
                 break
@@ -198,9 +197,9 @@ class Bricka:
         if self.ball.colliderect(self.paddle):
             self.ball.top=PADDLE_Y-BALL_DIAMETER
             
-            print("ball left=",self.ball.left)
-            print("paddle left=",self.paddle.left)
-            print("diff",self.ball.left-self.paddle.left)
+            #print("ball left=",self.ball.left)
+            #print("paddle left=",self.paddle.left)
+            #print("diff",self.ball.left-self.paddle.left)
             
             # Dynamic hits /Gustaf
             diff = self.ball.left - self.paddle.left
@@ -210,7 +209,7 @@ class Bricka:
             v = np.linalg.norm(self.ball_vel)
             
             self.ball_vel[0] = v*np.cos(phi)
-            self.ball_vel[1] = -1.025*self.ball_vel[1]  # increasing y-speed with 2.5 % for each hit
+            self.ball_vel[1] = -1.015*self.ball_vel[1]  # increasing y-speed with 2.5 % for each hit
                 
             q = -1 + 2*np.random.rand()
             s = np.sign(q)
@@ -245,12 +244,14 @@ class Bricka:
             self.screen.blit(font_surface,(x,y))
             
     
-    def run(self,network,course_nbr,max_playtime,display_game,fps,max_nbr_frames):
+    def run(self,network,use_network,course_nbr,display_game,fps,max_nbr_frames):
+        
         while 1:
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
-                    
+            
+            self.use_network = use_network
             self.clock.tick(fps)
             self.screen.fill(BLACK)
             self.check_input(course_nbr)
@@ -283,16 +284,36 @@ class Bricka:
         
 
     
-def play_game(network,course_nbr,max_playtime,display_game,fps,max_nbr_frames):
-    b = Bricka(course_nbr)
-    score, frames_run = b.run(network,course_nbr,max_playtime,display_game,fps,max_nbr_frames)
+def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,max_nbr_frames=1000,
+              score_exponent=1, frame_exponent=1):
+    '''
+    [] Courses are defined as 'level<course_nbr>.csv'. The standard course is 666.
     
-    return score, frames_run
-
-#%%
-#
-#if __name__== "__main__":
-#    network = []
-#    maximumPlayTime = 10  # seconds
-#    Bricka().run()
-
+    [] Fitness measure is defined as  F = score^a*frames_run^b, where 
+        a = score_exponent
+        b = frame_exponent
+    
+    params:
+        * Network network: Network object that plays the game
+        * use_network (0 or 1): if 1, only user inputs change pad position,
+            otherwise, the network plays on its own.
+        * int display_game (0 or 1): show game visuals or not 
+        * int fps: essentially game speed
+        * float score_exponent
+        * float frame_exponent        
+    
+    returns: 
+        * int score: from destroying bricks
+        * int frames_run: number of frames played before termination
+    '''
+        
+    b = Bricka(course_nbr)
+    score, frames_run = b.run(network,use_network,course_nbr,display_game,fps,max_nbr_frames)
+    
+    fitness = score**(np.float(score_exponent))*frames_run**(np.float(frame_exponent))
+    
+    print("Fitness is defined as F = score^"+str(score_exponent) +
+          "*frames_run^"+str(frame_exponent))
+    print("Fitness after playing=",fitness)
+    
+    return score, frames_run, fitness

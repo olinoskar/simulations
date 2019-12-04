@@ -1,14 +1,12 @@
-# %% Run the game and return score
+#%% One way of playing the game
+
+
 from dxball import play_game
-
 network = []
-max_playtime = 10  # seconds
-display_game = 1
-fps = 50
-max_nbr_frames = 1000  # some arbitrary number
-course_nbr = 666
+score, frames_run, fitness = play_game(network)
 
-score, frames_run = play_game(network,course_nbr,max_playtime,display_game,fps,max_nbr_frames)
-frames_str = "{:.2f}".format(frames_run)
-print("Score = " + str(score) + " after " + frames_str + " frames played.") 
-
+#%% Another way of playing the game
+score, frames_run, fitness = play_game(network,use_network=1,
+                                       course_nbr=666,display_game=1,fps=50,
+                                       max_nbr_frames=1000,score_exponent=0.35, 
+                                       frame_exponent=0.35) 
