@@ -42,3 +42,11 @@ class Network:
     def feed(self, X):
         V = self.prop_forward(X)
         return V
+
+    def mutate(self,mutationrate,creeprate):
+        for w in range(self.W)
+            W[w]=W[w]+creeprate*(2*np.random.random(size=w.shape)-1)*np.random.choice([1,0],p=[mutationrate 1-mutationrate])
+
+        for t in range(self.Theta)+creeprate*(2*np.random.random(size=w.shape)-1)*np.random.choice([1,0],p=[mutationrate 1-mutationrate])
+            Theta[t]=Theta[t]
+        return W
