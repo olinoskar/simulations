@@ -203,8 +203,6 @@ class Bricka:
             print("diff",self.ball.left-self.paddle.left)
             
             # Dynamic hits /Gustaf
-            
-            
             diff = self.ball.left - self.paddle.left
             
             phi = np.pi*(1-diff/PADDLE_WIDTH)
