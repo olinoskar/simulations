@@ -1,4 +1,4 @@
-from neural_network import NeuralNetwork
+from Network import Network
 from dxball import play_game
 import numpy as np
 import copy
@@ -6,16 +6,13 @@ import copy
 
 
 def main():
-    pass
+    run()
 
 
 
+def run():
 
-
-
-def run(params):
-
-
+    print('\n')
     population_size = 100
     mutation_probability = 0.04
     creep_rate = 0.4
@@ -25,11 +22,13 @@ def run(params):
     number_of_copies = 5
     crossover_probability = 0.8
 
-    training_courses = []
-    validation_courses = [] 
+    training_courses = [666]
+    validation_courses = [666] 
 
     network_shape = [4, 4, 2]
-    population = initialize(pop_size, network_shape)
+    population = initialize(population_size, network_shape)
+
+    assert len(population)==population_size
 
     best_fitness_ever = 0
     best_individual_ever = 0
@@ -39,7 +38,7 @@ def run(params):
 
         score_matr, time_matr = decode_population(population, training_courses)
         fitness = evaluate_population(score_matr, time_matr)
-        res = np.where(fitness == np.amax(fitness))
+        res = np.where(fitness == max(fitness))
         best_index = res[0][0]
         best_individual = copy.deepcopy(population[best_index])
         max_train_fitness = fitness[i]
@@ -99,13 +98,14 @@ def initialize(pop_size, network_shape):
     """ Initialize population of Neural Networks """
     population = []
     for _ in range(pop_size):
-        nn = NeuralNetwork(shape = network_shape)
+        nn = Network(shape = network_shape)
         population.append(nn)
     return population
 
 def decode_population(population, courses):
     pop_size = len(population)
-    score_matr, time_matr = np.zeros(shape = (population_size, len(courses)) )
+    score_matr = np.zeros(shape = (pop_size, len(courses)) )
+    time_matr = np.zeros(shape = (pop_size, len(courses)) )
     for i, individual in enumerate(population):
         chromosome = individual
         scores, play_times = decode_chromosome(chromosome, courses)
@@ -116,11 +116,11 @@ def decode_population(population, courses):
 
 def decode_chromosome(chromosome, courses):
     """ Decode chromosome by letting it play the game"""
-    max_play_time = 60
+    frames = 60*30
     network = chromosome
     scores, play_times = [], []
     for course in courses:
-        score, play_time = play_game(network, course, max_play_time)
+        score, play_time = play_game(network, course_nbr=course, max_nbr_frames = frames)
         scores.append(score)
         play_times.append(play_time)
     return np.array(scores), np.array(play_times)
@@ -131,8 +131,9 @@ def evaluate_population(score_matr, time_matr):
     Evaluate all individuals in population. At the moment the fitness is taken
     as the mean of score*play_time on each score
     """
-    n_courses = scores.shape[1]
-    score_time = scores*play_times
+
+    n_courses = score_matr.shape[1]
+    score_time = score_matr*time_matr
     score_time_sum = score_time.sum(axis=1)
     fitness = score_time_sum / n_courses
     return fitness
