@@ -1,0 +1,42 @@
+import math
+import random
+import numpy as np
+import functions as func
+
+DEFAULT_HIDDEN_LAYER_SIZE = 4
+OUTPUT_LAYER_SIZE = 1
+INPUTS = 5
+NUMBER_OF_ACTIONS = 2
+
+
+class Network:
+    def __init__(self, shape,weights,thresholds):
+        self.L = len(shape)
+        self.W = []
+        self.Theta = []
+        for l in range(self.L - 1):
+            self.W.append(weights)
+            self.Theta.append()
+
+    def print_network(self):
+        print('\n\n--------------')
+        for weights, thresholds in zip(self.W, self.Theta):
+            print(weights)
+            print(thresholds)
+            print('--------------')
+        print('\n\n')
+
+    def prop_forward(self, X):
+        V = X
+
+        for l in range(self.L - 1):
+            # print(self.W[l])
+            # print(V)
+            # print(self.Theta[l])
+            b = np.dot(self.W[l], V) - self.Theta[l]
+            V = b
+        return V
+
+    def feed(self, X):
+        V = self.prop_forward(X)
+        return V
