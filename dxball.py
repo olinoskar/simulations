@@ -109,25 +109,27 @@ class Bricka:
         
         x = [self.ball.left, self.ball.top]
         v = self.ball_vel
-        inputs = [x[0],x[1],v[0],v[1]]
+        inputs = [x[0],x[1],v[0],v[1],self.paddle.left]
              
-        output = Network.prop_forward(self.network, inputs)
+        outputs = Network.prop_forward(self.network, inputs)
             
         new_action_allowed = (self.frames_run - self.frame_previous_movement
                               > self.frames_between_actions)
-
+        
+        neuron_index = np.where(outputs == max(outputs))[0][0]
         
         # Network actions
         if self.use_network and new_action_allowed:
-            if output < 0.33:
-                self.paddle.left-= self.padVelocity*boost_factor
+            if neuron_index == 0:  # move left
+                self.paddle.left -= self.padVelocity*boost_factor
                 self.frame_previous_movement = self.frames_run
                 if self.paddle.left < 0:
                     self.paddle.left = 0
                     
-            # if output \in [0.33, 0.66]: <stand still>
-                    
-            elif output > 0.66:
+            elif neuron_index == 1:  # stand still   
+                self.paddle.left = self.paddle.left
+                
+            elif neuron_index == 2:  # move right
                 self.paddle.left += self.padVelocity*boost_factor
                 self.frame_previous_movement = self.frames_run
                 if self.paddle.left > MAX_PADDLE_X:

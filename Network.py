@@ -35,7 +35,8 @@ class Network:
             #print(V)
             #print(self.Theta[l])
             b = np.dot(self.W[l], V) - self.Theta[l]
-            V = b
+            beta = 1
+            V = 1./(1+np.exp(-b*beta))
         return V
 
 
