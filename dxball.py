@@ -59,6 +59,9 @@ class Bricka:
         self.state=STATE_BALL_IN_PADDLE
         self.spawn_prob = 0.5
         self.use_network = 0
+        self.frame_previous_movement = -10
+        self.frames_between_actions = 5  # base value
+        self.network = []
         
         self.crate= []
         #pygame.Rect(self.ball.left,self.ball.top,20,20)
@@ -92,6 +95,7 @@ class Bricka:
                     self.blue_bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
                 x_ofs += BRICK_WIDTH + 10
             y_ofs += BRICK_HEIGHT+5
+            
     def draw_bricks(self):
         for brick in self.bricks:
             pygame.draw.rect(self.screen,BRICK_COLOR,brick)
@@ -103,37 +107,40 @@ class Bricka:
     def check_input(self,course_nbr):  # Edit this to take input from neural network
         keys=pygame.key.get_pressed()
         self.frames_run += 1
-        #print('frames_run=',self.frames_run)
         
-        boost_factor = 1  # 1 => no effect
+        boost_factor = 1  # 1 => no extra effect
         
         x = [self.ball.left, self.ball.top]
         v = self.ball_vel
         inputs = [x[0],x[1],v[0],v[1]]
-        
-        nbrInputs = 4
-        nbrHidden = 3
-        nbrOutputs = 1
-        
-        shape = [nbrInputs, nbrHidden, nbrOutputs]
-        network = Network(shape)        
-        output = Network.prop_forward(network, inputs)
+             
+        output = Network.prop_forward(self.network, inputs)
             
-        if self.use_network:
-            if output < 0.5:
+        new_action_allowed = (self.frames_run - self.frame_previous_movement
+                              > self.frames_between_actions)
+        assert self.frames_between_actions == 5, "self.frames_between_actions "+(
+            str(self.frames_between_actions))
+        
+        # Network actions
+        if self.use_network and new_action_allowed:
+            if output < 0.33:
                 self.paddle.left-= self.padVelocity*boost_factor
+                self.frame_previous_movement = self.frames_run
                 if self.paddle.left < 0:
                     self.paddle.left = 0
                     
-            elif output > 0.5:
+            # if output \in [0.33, 0.66]: <stand still>
+                    
+            elif output > 0.66:
                 self.paddle.left += self.padVelocity*boost_factor
+                self.frame_previous_movement = self.frames_run
                 if self.paddle.left > MAX_PADDLE_X:
                     self.paddle.left = MAX_PADDLE_X
   
         # Below: possible to assign own inputs as well, so keep these for the 
         # time being.
         if keys[pygame.K_LEFT]:
-            self.paddle.left-= self.padVelocity
+            self.paddle.left -= self.padVelocity
             if self.paddle.left < 0:
                 self.paddle.left = 0
   
@@ -143,8 +150,7 @@ class Bricka:
                 self.paddle.left = MAX_PADDLE_X
   
         if self.state== STATE_BALL_IN_PADDLE:
-            r = np.random.rand()
-            self.ball_vel=[5*np.sign(r),-5*np.sign(r)]
+            self.ball_vel=[5,-5]  # always starts ball in the same 
             self.state=STATE_PLAYING
         elif keys[pygame.K_RETURN] and (self.state==STATE_GAME_OVER):
             self.init_game(course_nbr)
@@ -197,11 +203,7 @@ class Bricka:
         if self.ball.colliderect(self.paddle):
             self.ball.top=PADDLE_Y-BALL_DIAMETER
             
-            #print("ball left=",self.ball.left)
-            #print("paddle left=",self.paddle.left)
-            #print("diff",self.ball.left-self.paddle.left)
-            
-            # Dynamic hits /Gustaf
+            ##### Dynamic hits ##### /Gustaf
             diff = self.ball.left - self.paddle.left
             
             phi = np.pi*(1-diff/PADDLE_WIDTH)
@@ -209,19 +211,19 @@ class Bricka:
             v = np.linalg.norm(self.ball_vel)
             
             self.ball_vel[0] = v*np.cos(phi)
-            self.ball_vel[1] = -1.015*self.ball_vel[1]  # increasing y-speed with 2.5 % for each hit
+            self.ball_vel[1] = -1.015*self.ball_vel[1]  # increasing y-speed with each hit
                 
             q = -1 + 2*np.random.rand()
             s = np.sign(q)
             
             if self.ball_vel[0] == 0:
                 self.ball_vel[0] = -s
-                
-            
             
             if np.abs(self.ball_vel[0]) < 0.1:
                 print("xv = 0")
                 self.ball_vel[0] = 10
+            
+            ##### End dynamic hits #####
                 
         elif self.ball.top > self.paddle.top:
             self.lives-=1
@@ -250,7 +252,8 @@ class Bricka:
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
-            
+                    
+            self.network = network            
             self.use_network = use_network
             self.clock.tick(fps)
             self.screen.fill(BLACK)
@@ -265,7 +268,7 @@ class Bricka:
             elif self.state==STATE_BALL_IN_PADDLE:
                 self.ball.left=self.paddle.left+ self.paddle.width/2
                 self.ball.top=self.paddle.top-self.ball.height
-                #self.show_message("Press space to launch the ball")
+                
             elif self.state==STATE_GAME_OVER:
                 print("game ran for ", self.frames_run, " frames")
                 return self.score, self.frames_run
@@ -307,6 +310,9 @@ def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,max_nbr
         * int frames_run: number of frames played before termination
     '''
         
+    ''' TODO:
+            * let user input: int frames_between_actions
+    '''
     b = Bricka(course_nbr)
     score, frames_run = b.run(network,use_network,course_nbr,display_game,fps,max_nbr_frames)
     
