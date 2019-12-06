@@ -2,6 +2,7 @@ from Network import Network
 from dxball import play_game
 import numpy as np
 import copy
+from pprint import pprint
 
 
 
@@ -13,19 +14,19 @@ def main():
 def run():
 
     print('\n')
-    population_size = 100
+    population_size = 20
     mutation_probability = 0.04
     creep_rate = 0.4
     ts_parameter = 0.75
     ts_size = 2
     number_of_generations = 200
-    number_of_copies = 5
+    number_of_copies = 2
     crossover_probability = 0.8
 
     training_courses = [666]
     validation_courses = [666] 
 
-    network_shape = [4, 4, 2]
+    network_shape = [5, 4, 3]
     population = initialize(population_size, network_shape)
 
     assert len(population)==population_size
@@ -38,17 +39,18 @@ def run():
 
         score_matr, time_matr = decode_population(population, training_courses)
         fitness = evaluate_population(score_matr, time_matr)
+        print(np.mean(fitness))
         res = np.where(fitness == max(fitness))
         best_index = res[0][0]
         best_individual = copy.deepcopy(population[best_index])
-        max_train_fitness = fitness[i]
+        max_train_fitness = fitness[best_index]
+
 
 
         tmp_pop = copy.deepcopy(population)
-
         for i in range(0, population_size, 2):
-            i1 = tournament_selection(fitness, ts_parameter, ts_size)
-            i2 = tournament_selection(fitness, ts_parameter, ts_size)
+            i1 = tournament_select(fitness, ts_parameter, ts_size)
+            i2 = tournament_select(fitness, ts_parameter, ts_size)
 
             assert i1 >= 0  and i2 >= 0, 'Something went wrong in tournament selection'
 
@@ -60,16 +62,29 @@ def run():
             tmp_pop[i] = chromosome1
             tmp_pop[i+1] = chromosome2
 
-        
         for i in range(population_size):
-            chromosome = copy.deepcopy(population[i])
-            mutated_chromosome = mutate_individual(chromosome, mutation_probability, creep_rate)
+            chromosome = copy.deepcopy(population[i])    
+            chromosome.mutate(mutationrate = mutation_probability, creeprate = creep_rate)
+            mutated_chromosome = chromosome
+
             tmp_pop[i] = mutated_chromosome
+
+
+
+        score, play_time,_ = play_game(best_individual, course_nbr=training_courses[0], max_nbr_frames = 60*30, fps=50000)
+        score_matr, time_matr = decode_population(tmp_pop, training_courses)
+        fitness = evaluate_population(score_matr, time_matr)
+
+
 
         tmp_pop = insert_best_individual(tmp_pop, best_individual, number_of_copies)
         population = tmp_pop
 
 
+
+
+        max_validation_fitness = 0
+        """
         # Validation
         score_matr, time_matr = decode_population(population, validation_courses)
         fitness = evaluate_population(score_matr, time_matr)
@@ -81,13 +96,11 @@ def run():
             best_fitness_ever = max_validation_fitness
             best_individual_ever = best_individual_validation
 
+        """
         print('Generation {}: Training fitness: {}, Validation fitness: {}'.format(
             generation, max_train_fitness, max_validation_fitness)
         )
 
-
-
-        
 
 
 
@@ -120,7 +133,7 @@ def decode_chromosome(chromosome, courses):
     network = chromosome
     scores, play_times = [], []
     for course in courses:
-        score, play_time = play_game(network, course_nbr=course, max_nbr_frames = frames)
+        score, play_time,_ = play_game(network, course_nbr=course, max_nbr_frames = frames, fps=5000)
         scores.append(score)
         play_times.append(play_time)
     return np.array(scores), np.array(play_times)
@@ -129,9 +142,8 @@ def decode_chromosome(chromosome, courses):
 def evaluate_population(score_matr, time_matr):
     """
     Evaluate all individuals in population. At the moment the fitness is taken
-    as the mean of score*play_time on each score
+    as the mean of score*play_time on each score.
     """
-
     n_courses = score_matr.shape[1]
     score_time = score_matr*time_matr
     score_time_sum = score_time.sum(axis=1)
@@ -146,10 +158,8 @@ def mutate_individual(population, mutation_parameter, creep_rate):
     return population
 
 
-
 def tournament_select(fitness, ts_parameter, ts_size):
     """ Tournament selection according to the fitness list. """
-    
     pop_size = len(fitness)
     participants = []
     for _ in range(ts_size):
@@ -159,14 +169,14 @@ def tournament_select(fitness, ts_parameter, ts_size):
     indices = np.argsort(participants)
 
     i_selected = -1
-    i_count = -1
-    while i_selected==0:
-        i_count +=1
+    i_count = 0
+    while i_selected==-1:
+        
         r = np.random.random()
-
-        if r < ts_parameter or  i_count == length(participants):
+        if r < ts_parameter or  i_count == len(participants)-1:
             i_selected = indices[i_count];
             return i_selected
+        i_count +=1
     return i_selected
 
 
@@ -190,8 +200,8 @@ def cross(chromosome1, chromosome2):
         w1, w2 = w1_vec.reshape(n,m), w2_vec.reshape(n,m)
         network1.W[i], network2.W[i] = w1, w2
 
-    for i in range(len(network1.T)):
-        t1, t2 = network1.T[i], network2.T[i]
+    for i in range(len(network1.Theta)):
+        t1, t2 = network1.Theta[i], network2.Theta[i]
         n = len(t1)
         assert n == len(t2), "Threshold vectors not the same length"
 
@@ -201,7 +211,7 @@ def cross(chromosome1, chromosome2):
         t1[:index] = t2[:index].copy()
         t2[:index] = tmp.copy()
 
-        network1.T[i], network2.T[i] = t1, t2
+        network1.Theta[i], network2.Theta[i] = t1, t2
 
     chromosome1, chromosome2 = network1, network2
     return chromosome1, chromosome2
@@ -210,7 +220,11 @@ def cross(chromosome1, chromosome2):
 
 def insert_best_individual(population, best_individual, n_copies):
     """ Insert the best individual into the population"""
-    for i in range(n_copies):
+
+    indices = range(n_copies)
+    indices = np.random.choice(len(population), n_copies, replace = False)
+
+    for i in indices:
         population[i] = copy.deepcopy(best_individual)
     return population
 
