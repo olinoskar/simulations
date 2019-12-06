@@ -42,10 +42,7 @@ class Bricka:
     
         self.clock = pygame.time.Clock()
     
-        if pygame.font:
-          self.font=pygame.font.Font(None,30)
-        else:
-          self.font=None
+        self.font=None
           
         self.init_game(course_nbr)
         
@@ -60,7 +57,7 @@ class Bricka:
         self.spawn_prob = 0.5
         self.use_network = 0
         self.frame_previous_movement = -10
-        self.frames_between_actions = 5  # base value
+        self.frames_between_actions = 2  # base value
         self.network = []
         
         self.crate= []
@@ -118,8 +115,7 @@ class Bricka:
             
         new_action_allowed = (self.frames_run - self.frame_previous_movement
                               > self.frames_between_actions)
-        assert self.frames_between_actions == 5, "self.frames_between_actions "+(
-            str(self.frames_between_actions))
+
         
         # Network actions
         if self.use_network and new_action_allowed:
