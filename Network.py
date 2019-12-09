@@ -37,10 +37,6 @@ class Network:
         return True
             
 
-
-
-
-
     def print_network(self):
         print('\n\n--------------')
         for weights, thresholds in zip(self.W, self.Theta):
@@ -58,7 +54,8 @@ class Network:
             #print(self.Theta[l])
             b = np.dot(self.W[l], V) - self.Theta[l]
             beta = 1
-            V = 1./(1+np.exp(-b*beta))
+            #V = 1./(1+np.exp(-b*beta))
+            V = b
         return V
 
 
@@ -105,7 +102,7 @@ class Network:
             -> network = Network(shape = [4, 4, 2])
             -> network.load(path = 'results/some_directory')
         """
-        
+
         files = os.listdir(path)
 
         weight_files, theta_files = [], []

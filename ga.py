@@ -21,6 +21,11 @@ def run(path = None):
 
     print('\n')
     population_size = 20
+
+    frames = 60*30
+
+
+
     mutation_probability = 0.04
     creep_rate = 0.4
     ts_parameter = 0.75
@@ -32,8 +37,11 @@ def run(path = None):
     training_courses = [666]
     validation_courses = [666] 
 
-    network_shape = [5, 4, 3]
+    network_shape = [5, 10, 3]
     population = initialize(population_size, network_shape)
+
+    time_fun = np.vectorize(time_effect)
+
 
     assert len(population)==population_size
 
@@ -43,13 +51,24 @@ def run(path = None):
 
     for generation in range(number_of_generations):
 
+
+        mutation_rate = mutation_probability + np.exp(-generation/10)
+        if mutation_rate > 1:
+            mutation_rate = 0.9999999999
+
+        print('\n\nGeneration: {}'.format(generation))
+
         score_matr, time_matr = decode_population(population, training_courses)
-        fitness = evaluate_population(score_matr, time_matr)
-        print(np.mean(fitness))
+        fitness = evaluate_population(score_matr, time_matr, frames)
+
+
+        #print('Average training fitness: {}'.format(np.mean(fitness)))
         res = np.where(fitness == max(fitness))
         best_index = res[0][0]
+  
         best_individual = copy.deepcopy(population[best_index])
         max_train_fitness = fitness[best_index]
+        print('Max training fitness: {}'.format(max_train_fitness))
 
 
 
@@ -70,7 +89,7 @@ def run(path = None):
 
         for i in range(population_size):
             chromosome = copy.deepcopy(population[i])    
-            chromosome.mutate(mutationrate = mutation_probability, creeprate = creep_rate)
+            chromosome.mutate(mutationrate = mutation_rate, creeprate = creep_rate)
             mutated_chromosome = chromosome
 
             tmp_pop[i] = mutated_chromosome
@@ -84,21 +103,26 @@ def run(path = None):
 
 
         tmp_pop = insert_best_individual(tmp_pop, best_individual, number_of_copies)
-        population = tmp_pop
+        population = copy.deepcopy(tmp_pop)
 
-        max_validation_fitness = 0
         
         # Validation
         score_matr, time_matr = decode_population(population, validation_courses)
-        fitness = evaluate_population(score_matr, time_matr)
+        fitness = evaluate_population(score_matr, time_matr, frames)
+
+        #print('Average validation fitness: {}'.format(np.mean(fitness)))
         res = np.where(fitness == np.amax(fitness))
         best_index = res[0][0]
+
         best_individual_validation = copy.deepcopy(population[best_index])
-        max_validation_fitness = fitness[i]
+        max_validation_fitness = fitness[best_index]
+        print('Max validation fitness: {}'.format(max_validation_fitness))
         if max_validation_fitness > best_fitness_ever:
+            print('best_fitness_ever: {}'.format(best_fitness_ever))
             best_fitness_ever = max_validation_fitness
-            best_individual_ever = best_individual_validation
+            best_individual_ever = copy.deepcopy(best_individual_validation)
             if path:
+                print('Saving network to: {}'.format(path))
                 best_individual_ever.save(path = path)
 
         
@@ -107,9 +131,7 @@ def run(path = None):
         )
 
 
-
-
-
+       
 
 
 def initialize(pop_size, network_shape):
@@ -132,9 +154,8 @@ def decode_population(population, courses):
     return score_matr, time_matr
 
 
-def decode_chromosome(chromosome, courses):
+def decode_chromosome(chromosome, courses, frames):
     """ Decode chromosome by letting it play the game"""
-    frames = 60*30
     network = chromosome
     scores, play_times = [], []
     for course in courses:
@@ -144,15 +165,18 @@ def decode_chromosome(chromosome, courses):
     return np.array(scores), np.array(play_times)
 
 
-def evaluate_population(score_matr, time_matr):
+def evaluate_population(score_matr, time_matr, frames):
     """
     Evaluate all individuals in population. At the moment the fitness is taken
     as the mean of score*play_time on each score.
     """
     n_courses = score_matr.shape[1]
+    time_matr = time_fun(time_matr, frames)
+
     score_time = score_matr*time_matr
     score_time_sum = score_time.sum(axis=1)
     fitness = score_time_sum / n_courses
+    #fitness = score_matr.sum(axis=1) / n_courses
     return fitness
 
 
@@ -236,6 +260,11 @@ def insert_best_individual(population, best_individual, n_copies):
 
 
 
+##################################################
+# Helper functions
+
+def time_effect(played_time, frames):
+    return 1 - 1/(1+np.exp(-play_time/frames+1))
 
 
 
