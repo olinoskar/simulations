@@ -268,7 +268,7 @@ class Bricka:
                 self.ball.top=self.paddle.top-self.ball.height
                 
             elif self.state==STATE_GAME_OVER:
-                print("game ran for ", self.frames_run, " frames")
+                #print("game ran for ", self.frames_run, " frames")
                 return self.score, self.frames_run
             self.draw_bricks()
     
@@ -315,9 +315,9 @@ def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,max_nbr
     score, frames_run = b.run(network,use_network,course_nbr,display_game,fps,max_nbr_frames)
     
     fitness = score**(np.float(score_exponent))*frames_run**(np.float(frame_exponent))
-    
+    """
     print("Fitness is defined as F = score^"+str(score_exponent) +
           "*frames_run^"+str(frame_exponent))
     print("Fitness after playing=",fitness)
-    
+    """
     return score, frames_run, fitness

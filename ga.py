@@ -4,14 +4,20 @@ import numpy as np
 import copy
 from pprint import pprint
 
+import argparse
+
 
 
 def main():
-    run()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p','--path', help='Name of the first file')
+    args = parser.parse_args()
+    run(path = args.path)
 
 
 
-def run():
+def run(path = None):
 
     print('\n')
     population_size = 20
@@ -80,11 +86,8 @@ def run():
         tmp_pop = insert_best_individual(tmp_pop, best_individual, number_of_copies)
         population = tmp_pop
 
-
-
-
         max_validation_fitness = 0
-        """
+        
         # Validation
         score_matr, time_matr = decode_population(population, validation_courses)
         fitness = evaluate_population(score_matr, time_matr)
@@ -95,8 +98,10 @@ def run():
         if max_validation_fitness > best_fitness_ever:
             best_fitness_ever = max_validation_fitness
             best_individual_ever = best_individual_validation
+            if path:
+                best_individual_ever.save(path = path)
 
-        """
+        
         print('Generation {}: Training fitness: {}, Validation fitness: {}'.format(
             generation, max_train_fitness, max_validation_fitness)
         )
