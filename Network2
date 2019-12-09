@@ -2,7 +2,8 @@ import math
 import random
 import numpy as np
 import functions as func
-from keras.models import Sequential
+import tensorflow.layers as layers
+import tensorflow.keras as keras
 from keras.layers import Dense, Conv2D, Flatten
 
 DEFAULT_HIDDEN_LAYER_SIZE = 4
@@ -11,21 +12,24 @@ INPUTS = 5
 NUMBER_OF_ACTIONS = 2
 
 
-class Network:
+class Network2:
     def __init__(self, shape):
         self.L = len(shape)
         self.W = []
         self.Theta = []
+        self.model = keras.Sequential()
         for l in range(self.L - 1):
-            self.W.append(np.random.normal(loc=0, scale=1 / np.sqrt(shape[l]),
-                                           size=(shape[l + 1], shape[l])))
-            self.Theta.append(np.zeros(shape=(shape[l + 1])))
+            self.model.add(Conv2D(1,
+                                  3,
+                                  strides=(1,1),
+                                  padding="valid",
+                                  activation="relu",
+                                  input_dim=shape[l]))
 
     def print_network(self):
         print('\n\n--------------')
-        for weights, thresholds in zip(self.W, self.Theta):
-            print(weights)
-            print(thresholds)
+        for layer in model.layers:
+            print(layer.get_weights())
             print('--------------')
         print('\n\n')
 
@@ -58,11 +62,9 @@ class Network:
 
 if __name__ == "__main__":
     a = [4, 4, 2]
-    x = Network(shape=a)
+    x = Network2(shape=a)
     x.print_network()
-    for i in range(10):
-        x.mutate(mutationrate=0.3, creeprate=0.4)
-        x.print_network()
+
 
 
 
