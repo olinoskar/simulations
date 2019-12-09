@@ -3,6 +3,7 @@ from dxball import play_game
 import numpy as np
 import copy
 from pprint import pprint
+import constants as consts 
 
 import argparse
 
@@ -30,11 +31,10 @@ def main():
 def run(path = None):
 
     print('\n')
+    """
     population_size = 20
 
     frames = 60*30
-
-
 
     mutation_probability = 0.04
     creep_rate = 0.4
@@ -43,79 +43,72 @@ def run(path = None):
     number_of_generations = 200
     number_of_copies = 2
     crossover_probability = 0.8
+    """
 
     training_courses = [666]
     validation_courses = [666] 
 
     network_shape = [5, 10, 3]
-    population = initialize(population_size, network_shape)
+    population = initialize(consts.POPULATION_SIZE, network_shape)
 
     time_fun = np.vectorize(time_effect)
 
 
-    assert len(population)==population_size
+    assert len(population)==consts.POPULATION_SIZE
 
     best_fitness_ever = 0
     best_individual_ever = 0
        
 
-    for generation in range(number_of_generations):
+    for generation in range(consts.N_GENERATIONS):
 
 
-        mutation_rate = mutation_probability + np.exp(-generation/10)
+        mutation_rate = consts.MIN_MUT_PROB + np.exp(-generation*consts.MUT_RED_RATE)
         if mutation_rate > 1:
             mutation_rate = 0.9999999999
 
-        score_matr, time_matr = decode_population(population, training_courses, frames)
-        fitness = evaluate_population(score_matr, time_matr, time_fun, frames)
+        score_matr, time_matr = decode_population(population, training_courses, consts.MAX_FRAMES)
+        fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
         res = np.where(fitness == max(fitness))
         best_index = res[0][0]
   
         best_individual = copy.deepcopy(population[best_index])
         max_train_fitness = fitness[best_index]
 
-
-
-
         tmp_pop = copy.deepcopy(population)
-        for i in range(0, population_size, 2):
-            i1 = tournament_select(fitness, ts_parameter, ts_size)
-            i2 = tournament_select(fitness, ts_parameter, ts_size)
-
-            assert i1 >= 0  and i2 >= 0, 'Something went wrong in tournament selection'
+        for i in range(0, consts.POPULATION_SIZE, 2):
+            i1 = tournament_select(fitness, consts.TS_PARAM, consts.TS_SIZE)
+            i2 = tournament_select(fitness, consts.TS_PARAM, consts.TS_SIZE)
 
             chromosome1 = population[i1]
             chromosome2 = population[i2]
 
-            if np.random.random() < crossover_probability:
+            if np.random.random() < consts.CROSS_PROB:
                 chromosome1, chromosome2 = cross(chromosome1, chromosome2)  
             tmp_pop[i] = chromosome1
             tmp_pop[i+1] = chromosome2
 
-        for i in range(population_size):
+        for i in range(consts.POPULATION_SIZE):
             chromosome = copy.deepcopy(population[i])    
-            chromosome.mutate(mutationrate = mutation_rate, creeprate = creep_rate)
+            chromosome.mutate(mutationrate = mutation_rate, creeprate = consts.CREEP_RATE)
             mutated_chromosome = chromosome
 
             tmp_pop[i] = mutated_chromosome
 
-        tmp_pop = insert_best_individual(tmp_pop, best_individual, number_of_copies)
+        tmp_pop = insert_best_individual(tmp_pop, best_individual, consts.N_COPIES)
         population = copy.deepcopy(tmp_pop)
 
         # Validation
-        score_matr, time_matr = decode_population(population, validation_courses, frames)
-        fitness = evaluate_population(score_matr, time_matr, time_fun, frames)
-
-        #print('Average validation fitness: {}'.format(np.mean(fitness)))
+        score_matr, time_matr = decode_population(population, validation_courses, consts.MAX_FRAMES)
+        fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
         res = np.where(fitness == np.amax(fitness))
         best_index = res[0][0]
-
         best_individual_validation = copy.deepcopy(population[best_index])
         max_validation_fitness = fitness[best_index]
-        #print('Max validation fitness: {}'.format(max_validation_fitness))
+
         if max_validation_fitness > best_fitness_ever:
-            print('best_fitness_ever: {}'.format(best_fitness_ever))
             best_fitness_ever = max_validation_fitness
+            print('Best fitness ever: {}'.format(best_fitness_ever))
             best_individual_ever = copy.deepcopy(best_individual_validation)
             if path:
                 print('Saving network to: {}'.format(path))
