@@ -7,6 +7,16 @@ from pprint import pprint
 import argparse
 
 
+"""
+File dedicated to training using a genetic algorithm.
+
+Arguments:
+
+    * path: path to file to save the best network. Note that existing networks will be overritten.
+        - Example: python3 ga.py -p=results/test_run2
+
+"""
+
 
 def main():
 
@@ -56,19 +66,14 @@ def run(path = None):
         if mutation_rate > 1:
             mutation_rate = 0.9999999999
 
-        print('\n\nGeneration: {}'.format(generation))
-
-        score_matr, time_matr = decode_population(population, training_courses)
-        fitness = evaluate_population(score_matr, time_matr, frames)
-
-
-        #print('Average training fitness: {}'.format(np.mean(fitness)))
+        score_matr, time_matr = decode_population(population, training_courses, frames)
+        fitness = evaluate_population(score_matr, time_matr, time_fun, frames)
         res = np.where(fitness == max(fitness))
         best_index = res[0][0]
   
         best_individual = copy.deepcopy(population[best_index])
         max_train_fitness = fitness[best_index]
-        print('Max training fitness: {}'.format(max_train_fitness))
+
 
 
 
@@ -94,21 +99,12 @@ def run(path = None):
 
             tmp_pop[i] = mutated_chromosome
 
-
-
-        score, play_time,_ = play_game(best_individual, course_nbr=training_courses[0], max_nbr_frames = 60*30, fps=50000)
-        score_matr, time_matr = decode_population(tmp_pop, training_courses)
-        fitness = evaluate_population(score_matr, time_matr)
-
-
-
         tmp_pop = insert_best_individual(tmp_pop, best_individual, number_of_copies)
         population = copy.deepcopy(tmp_pop)
 
-        
         # Validation
-        score_matr, time_matr = decode_population(population, validation_courses)
-        fitness = evaluate_population(score_matr, time_matr, frames)
+        score_matr, time_matr = decode_population(population, validation_courses, frames)
+        fitness = evaluate_population(score_matr, time_matr, time_fun, frames)
 
         #print('Average validation fitness: {}'.format(np.mean(fitness)))
         res = np.where(fitness == np.amax(fitness))
@@ -116,7 +112,7 @@ def run(path = None):
 
         best_individual_validation = copy.deepcopy(population[best_index])
         max_validation_fitness = fitness[best_index]
-        print('Max validation fitness: {}'.format(max_validation_fitness))
+        #print('Max validation fitness: {}'.format(max_validation_fitness))
         if max_validation_fitness > best_fitness_ever:
             print('best_fitness_ever: {}'.format(best_fitness_ever))
             best_fitness_ever = max_validation_fitness
@@ -127,7 +123,7 @@ def run(path = None):
 
         
         print('Generation {}: Training fitness: {}, Validation fitness: {}'.format(
-            generation, max_train_fitness, max_validation_fitness)
+            generation, round(max_train_fitness,2), round(max_validation_fitness,2) )
         )
 
 
@@ -142,13 +138,13 @@ def initialize(pop_size, network_shape):
         population.append(nn)
     return population
 
-def decode_population(population, courses):
+def decode_population(population, courses, frames):
     pop_size = len(population)
     score_matr = np.zeros(shape = (pop_size, len(courses)) )
     time_matr = np.zeros(shape = (pop_size, len(courses)) )
     for i, individual in enumerate(population):
         chromosome = individual
-        scores, play_times = decode_chromosome(chromosome, courses)
+        scores, play_times = decode_chromosome(chromosome, courses, frames)
         score_matr[i,:] = scores
         time_matr[i,:] = play_times
     return score_matr, time_matr
@@ -165,7 +161,7 @@ def decode_chromosome(chromosome, courses, frames):
     return np.array(scores), np.array(play_times)
 
 
-def evaluate_population(score_matr, time_matr, frames):
+def evaluate_population(score_matr, time_matr, time_fun, frames):
     """
     Evaluate all individuals in population. At the moment the fitness is taken
     as the mean of score*play_time on each score.
@@ -264,7 +260,7 @@ def insert_best_individual(population, best_individual, n_copies):
 # Helper functions
 
 def time_effect(played_time, frames):
-    return 1 - 1/(1+np.exp(-play_time/frames+1))
+    return 1 - 1/(1+np.exp(-played_time/frames+1))
 
 
 

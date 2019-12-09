@@ -218,7 +218,7 @@ class Bricka:
                 self.ball_vel[0] = -s
             
             if np.abs(self.ball_vel[0]) < 0.1:
-                print("xv = 0")
+                #print("xv = 0")
                 self.ball_vel[0] = 10
             
             ##### End dynamic hits #####
