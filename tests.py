@@ -39,7 +39,7 @@ def test_network_save_and_load():
 
 def test_play_game_with_network():
 
-    path = 'results/oskar2'
+    path = 'results/oskar3'
 
     print_header('Testing game with network {}'.format(path))
 

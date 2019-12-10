@@ -17,3 +17,11 @@ Validation courses: [666]
 Testing courses: [666]
 Saved as: None
 
+Generations: 100
+Population size: 20
+Network shape: [77, 10, 3]
+Saved as: results/oskar3
+TRAINING:   mean score: 1940.0, fitness: 1244.41, courses [666]
+VALIDATION: mean score: 1940.0, fitness: 1244.41, courses [666]
+TESTING:    mean score: 1940.0, fitness: 1244.41, courses [666]
+

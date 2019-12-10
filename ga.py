@@ -29,9 +29,10 @@ def main():
 
 def run_ga(
     path=None,
-    network_shape=[5, 10, 3],
+    network_shape=[77, 10, 3],
     generations = consts.N_GENERATIONS,
-    population_size = consts.POPULATION_SIZE):
+    population_size = consts.POPULATION_SIZE
+    ):
 
 
     """

@@ -35,6 +35,12 @@ STATE_BALL_IN_PADDLE=0
 STATE_PLAYING=2
 STATE_GAME_OVER=3
 
+# New-brick probabilities
+PROB_GRAY = 0.05
+PROB_RED = 0.02
+PROB_BLUE = 0.01
+
+
 
 class Bricka:
     def __init__(self,course_nbr):
@@ -280,7 +286,33 @@ class Bricka:
             x= (SCREEN_SIZE[0]-size[0])/2
             y=(SCREEN_SIZE[1]-size[1])/2
             self.screen.blit(font_surface,(x,y))
-            
+    
+    def generate_new_bricks(self):
+
+        indices = np.where(self.brick_state == 0)
+        n = len(indices[0])
+        new_vals = np.random.choice([0,1,2,3], size = n, p=[1-PROB_GRAY-PROB_BLUE-PROB_RED, PROB_GRAY, PROB_RED, PROB_BLUE])
+
+        for i in range(n):
+            self.brick_state[indices[0][i], indices[1][i]] = new_vals[i]
+
+            x_ofs = 25 + indices[1][i]*(BRICK_WIDTH + 10)
+            y_ofs = 25 + indices[0][i]*(BRICK_HEIGHT+ 5)
+            if new_vals[i] == 1:
+                self.bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
+            elif new_vals[i] == 2:
+                self.red_bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
+            elif new_vals[i] == 3:
+                self.blue_bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
+
+
+
+
+
+
+
+
+
     
     def run(self,network,use_network,course_nbr,display_game,fps,max_nbr_frames):
         
@@ -320,6 +352,10 @@ class Bricka:
     
             if display_game:
                 pygame.display.flip()
+
+            if np.random.random() < 0.01:
+                self.generate_new_bricks()
+                self.draw_bricks()
         
 
     
