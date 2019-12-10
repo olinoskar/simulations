@@ -55,6 +55,7 @@ class Bricka:
         self.init_game(course_nbr)
         
     def init_game(self,course_nbr):
+        self.brownian_motion = 0
         self.brick_state = []
         self.t0 = time.time()
         self.frames_run=0
@@ -68,15 +69,13 @@ class Bricka:
         self.frame_previous_movement = -10
         self.frames_between_actions = 2  # base value
         self.network = []
+        self.initial_velocity = 0  
+        self.velocity_exponents = []     
         
-        self.crate= []
-        #pygame.Rect(self.ball.left,self.ball.top,20,20)
         self.paddle= pygame.Rect(300,PADDLE_Y,PADDLE_WIDTH,PADDLE_HEIGHT)
         self.ball=   pygame.Rect(300,PADDLE_Y-BALL_DIAMETER,BALL_DIAMETER,BALL_DIAMETER)
         
-        
-        v = 5
-        self.ball_vel=[v,-v]
+        self.ball_vel=[self.initial_velocity,-self.initial_velocity]
         self.create_bricks(course_nbr)
   
     def create_bricks(self,course_nbr):
@@ -113,7 +112,7 @@ class Bricka:
     
     def check_input(self,course_nbr):  # Edit this to take input from neural network
         keys=pygame.key.get_pressed()
-        self.frames_run += 1
+        
         
         boost_factor = 1  # 1 => no extra effect
         
@@ -218,7 +217,7 @@ class Bricka:
                 
                 self.brick_state[iRow,iCol] = 0     
                 self.score +=50
-                self.ball_vel[1]=-1.025*self.ball_vel[1]
+                self.ball_vel[1]=-self.ball_vel[1]*self.velocity_exponents[1]
                 self.red_bricks.remove(brick)
                 
                 break
@@ -234,7 +233,7 @@ class Bricka:
                 
                 self.brick_state[iRow,iCol] = 0     
                 self.score +=100
-                self.ball_vel[1]=-1.10*self.ball_vel[1]
+                self.ball_vel[1]=-self.ball_vel[1]*self.velocity_exponents[2]
                 self.blue_bricks.remove(brick)
                 
                 break
@@ -251,20 +250,14 @@ class Bricka:
             phi = np.pi*(1-diff/PADDLE_WIDTH)
             
             v = np.linalg.norm(self.ball_vel)
+            v_new = v*self.velocity_exponents[0]
             
-            self.ball_vel[0] = v*np.cos(phi)
-            self.ball_vel[1] = -1.015*self.ball_vel[1]  # increasing y-speed with each hit
+            self.ball_vel[0] = v_new*np.cos(phi)
+            self.ball_vel[1] = -v_new*np.sin(phi) 
+            
+#            if np.abs(self.ball_vel[0]) < 0.1:
+#                self.ball_vel[0] = 1
                 
-            q = -1 + 2*np.random.rand()
-            s = np.sign(q)
-            
-            if self.ball_vel[0] == 0:
-                self.ball_vel[0] = -s
-            
-            if np.abs(self.ball_vel[0]) < 0.1:
-                #print("xv = 0")
-                self.ball_vel[0] = 10
-            
             ##### End dynamic hits #####
                 
         elif self.ball.top > self.paddle.top:
@@ -273,6 +266,48 @@ class Bricka:
                 self.state=STATE_BALL_IN_PADDLE
             else:
                 self.state=STATE_GAME_OVER
+                
+    def old_brownian(self):
+        r = -1 + 2*np.random.rand()
+        
+        v = np.linalg.norm(self.ball_vel)
+        vx = self.ball_vel[0]
+        vy = self.ball_vel[1]
+    
+        gamma = r
+        beta = -vy + np.sqrt(v**2-vx**2-2*vx*gamma-gamma**2)
+        
+        if (np.abs(r) < 0.02 and self.ball.top < 480/3):
+            print(self.ball.top)
+            
+            if np.sign(r) > 0:
+                self.ball_vel[0] += gamma
+                self.ball_vel[1] += beta
+                
+            if np.sign(r) < 0:
+                self.ball_vel[0] -= gamma
+                self.ball_vel[1] -= beta
+                
+    def apply_brownian_motion(self):
+        r = -1 + 2*np.random.rand()
+        
+        if (np.abs(r) < 0.10 and self.ball.top > 480/3 and self.ball.top < 480/2):
+            v = np.linalg.norm(self.ball_vel)
+            
+            vx = self.ball_vel[0]
+            vy = self.ball_vel[1]
+            
+            v_new = v + self.velocity_terms[0]
+            
+            d_phi = (-1 + 2*np.random.rand())*np.pi/10            
+            phi = np.arctan(vy/vx)
+            #if vx < 0:
+            #    phi = np.pi - phi
+            
+            self.ball_vel[0] = v_new*np.cos(phi + d_phi)
+            self.ball_vel[1] = -v_new*np.sin(phi + d_phi) 
+        
+                
 
     def show_stats(self):
         if self.font:
@@ -306,21 +341,29 @@ class Bricka:
                 self.blue_bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
 
 
-
-
-
-
-
-
-
     
-    def run(self,network,use_network,course_nbr,display_game,fps,max_nbr_frames):
+    def run(self,network,use_network,course_nbr,display_game,fps,max_nbr_frames,
+            initial_velocity,velocity_exponents,brownian_motion):
         
         while 1:
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
                     
+            # Print velocity
+            vel = np.linalg.norm(self.ball_vel)
+            if vel > 10:
+                print("Ball velocity > 10")
+            elif vel > 15:
+                print("Ball velocity > 15")
+            elif vel > 20:
+                print("Ball velocity > 20")
+            elif vel > 25:
+                print("Ball velocity > 25")
+            
+            self.brownian_motion = brownian_motion
+            self.initial_velocity = initial_velocity  
+            self.velocity_exponents = velocity_exponents              
             self.network = network            
             self.use_network = use_network
             self.clock.tick(fps)
@@ -359,8 +402,10 @@ class Bricka:
         
 
     
-def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,max_nbr_frames=1000,
-              score_exponent=1, frame_exponent=1):
+def play_game(network,use_network=0,course_nbr=666,display_game=0,fps=50,
+              max_nbr_frames=1e5, score_exponent=1, frame_exponent=1,
+              initial_velocity = 7.5, velocity_exponents = [1.015, 1.025, 1.05],
+              brownian_motion=0):
     '''
     [] Courses are defined as 'level<course_nbr>.csv'. The standard course is 666.
     
@@ -386,7 +431,10 @@ def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,max_nbr
             * let user input: int frames_between_actions
     '''
     b = Bricka(course_nbr)
-    score, frames_run = b.run(network,use_network,course_nbr,display_game,fps,max_nbr_frames)
+    score, frames_run = b.run(network,use_network,course_nbr,
+                              display_game,fps,max_nbr_frames,
+                              initial_velocity,velocity_exponents,
+                              brownian_motion)
     
     fitness = score**(np.float(score_exponent))*frames_run**(np.float(frame_exponent))
     """
