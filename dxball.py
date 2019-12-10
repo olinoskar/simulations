@@ -122,8 +122,7 @@ class Bricka:
         
         otherInputs = [x[0],x[1],v[0],v[1],self.paddle.left]
 
-        inputs = brickInputs + otherInputs        
-        
+        inputs = brickInputs + otherInputs     
         outputs = Network.prop_forward(self.network, inputs)
             
         new_action_allowed = (self.frames_run - self.frame_previous_movement
@@ -219,6 +218,7 @@ class Bricka:
                 break
             
         kCount = -1
+        
         for brick in self.blue_bricks:
             kCount += 1
             indices = np.where(self.brick_state == 3)
