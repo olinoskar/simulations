@@ -4,7 +4,6 @@ import numpy as np
 import copy
 from pprint import pprint
 import constants as consts 
-
 import argparse
 
 
@@ -45,8 +44,6 @@ def run_ga(
         * generations (int): Number of generations.
         * population_size (int): Number of individals in the population.
     """
-
-    print('\n')
 
     training_courses = [666]
     validation_courses = [666] 
@@ -110,7 +107,7 @@ def run_ga(
 
         if max_validation_fitness > best_fitness_ever:
             best_fitness_ever = max_validation_fitness
-            print('Best fitness ever: {}'.format(round(best_fitness_ever,2)))
+            #print('Best fitness ever: {}'.format(round(best_fitness_ever,2)))
             best_individual_ever = copy.deepcopy(best_individual_validation)
             if path:
                 print('Saving network to: {}'.format(path))
@@ -121,27 +118,38 @@ def run_ga(
             generation, round(max_train_fitness,2), round(max_validation_fitness,2) )
         )
 
-    # Testing
+    # Get results from trainging courses
+    score_matr, time_matr = decode_population([best_individual_ever], training_courses, consts.MAX_FRAMES)
+    fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+    train_fitness = round(fitness[0],2)
+    mean_train_score = round(np.mean(score_matr))
+
+    # Get results from validation courses
+    score_matr, time_matr = decode_population([best_individual_ever], validation_courses, consts.MAX_FRAMES)
+    fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+    val_fitness = round(fitness[0],2)
+    mean_val_score = round(np.mean(score_matr))
+
+
+    # Get results from testing courses
     score_matr, time_matr = decode_population([best_individual_ever], testing_courses, consts.MAX_FRAMES)
     fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
-    test_fitness = fitness[0]
+    test_fitness = round(fitness[0],2)
+    mean_test_score = round(np.mean(score_matr))
 
-    mean_score = round(np.mean(score_matr))
     print("\nResults on test sets:")
     print("Fitness:", round(test_fitness, 2))
-    print("Score:", round(mean_score))
+    print("Score:", round(mean_test_score))
 
 
-    
-    res_line = "Test score: {}\n".format(mean_score)
-    res_line += "Test fitness: {}\n".format(test_fitness)
+    res_line = ""
     res_line += "Generations: {}\n".format(generations)
     res_line += "Population size: {}\n".format(population_size)
     res_line += "Network shape: {}\n".format(network_shape)
-    res_line += "Training courses: {}\n".format(training_courses)
-    res_line += "Validation courses: {}\n".format(validation_courses)
-    res_line += "Testing courses: {}\n".format(testing_courses)
     res_line += "Saved as: {}\n".format(path)
+    res_line += "TRAINING:   mean score: {}, fitness: {}, courses {}\n".format(mean_train_score, train_fitness, training_courses)
+    res_line += "VALIDATION: mean score: {}, fitness: {}, courses {}\n".format(mean_val_score, val_fitness, validation_courses)
+    res_line += "TESTING:    mean score: {}, fitness: {}, courses {}\n".format(mean_test_score, test_fitness, testing_courses)
     res_line += "\n"
 
     with open('ga_results_info.txt', 'a') as f:

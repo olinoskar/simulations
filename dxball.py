@@ -1,5 +1,7 @@
 # %% DX-ball
-import pygame
+import contextlib
+with contextlib.redirect_stdout(None):
+    import pygame
 import numpy as np
 import time
 from Network import Network
