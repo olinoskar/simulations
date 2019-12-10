@@ -4,12 +4,11 @@ import numpy as np
 import copy
 from pprint import pprint
 import constants as consts 
-
 import argparse
 
 
 """
-File dedicated to training using a genetic algorithm.
+File dedicated to training using a genetic algorithm. Saves results to ga_results_info.txt.
 
 Arguments:
 
@@ -22,46 +21,46 @@ Arguments:
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p','--path', help='Name of the first file')
+    parser.add_argument('-p', '--path', help='Name of the first file')
     args = parser.parse_args()
-    run(path = args.path)
+    run_ga(path = args.path)
 
 
 
-def run(path = None):
+def run_ga(
+    path=None,
+    network_shape=[5, 10, 3],
+    generations = consts.N_GENERATIONS,
+    population_size = consts.POPULATION_SIZE):
 
-    print('\n')
+
     """
-    population_size = 20
+    Train a neural network using a genetic algorithm. Saves results to ga_results_info.txt.
 
-    frames = 60*30
+    Arguments:
 
-    mutation_probability = 0.04
-    creep_rate = 0.4
-    ts_parameter = 0.75
-    ts_size = 2
-    number_of_generations = 200
-    number_of_copies = 2
-    crossover_probability = 0.8
+        * path (str): save the best network to this path (directory). 
+        * network_shape (list): shape of the neural network. List of integers.
+        * generations (int): Number of generations.
+        * population_size (int): Number of individals in the population.
     """
 
     training_courses = [666]
     validation_courses = [666] 
+    testing_courses = [666] 
 
-    network_shape = [5, 10, 3]
-    population = initialize(consts.POPULATION_SIZE, network_shape)
+    population = initialize(population_size, network_shape)
 
-    time_fun = np.vectorize(time_effect)
+    time_fun = np.vectorize(time_effect) # Used to penalize the elapsed time of a run
 
 
-    assert len(population)==consts.POPULATION_SIZE
+    assert len(population)==population_size
 
     best_fitness_ever = 0
     best_individual_ever = 0
        
 
-    for generation in range(consts.N_GENERATIONS):
-
+    for generation in range(generations):
 
         mutation_rate = consts.MIN_MUT_PROB + np.exp(-generation*consts.MUT_RED_RATE)
         if mutation_rate > 1:
@@ -76,7 +75,7 @@ def run(path = None):
         max_train_fitness = fitness[best_index]
 
         tmp_pop = copy.deepcopy(population)
-        for i in range(0, consts.POPULATION_SIZE, 2):
+        for i in range(0, population_size, 2):
             i1 = tournament_select(fitness, consts.TS_PARAM, consts.TS_SIZE)
             i2 = tournament_select(fitness, consts.TS_PARAM, consts.TS_SIZE)
 
@@ -88,7 +87,7 @@ def run(path = None):
             tmp_pop[i] = chromosome1
             tmp_pop[i+1] = chromosome2
 
-        for i in range(consts.POPULATION_SIZE):
+        for i in range(population_size):
             chromosome = copy.deepcopy(population[i])    
             chromosome.mutate(mutationrate = mutation_rate, creeprate = consts.CREEP_RATE)
             mutated_chromosome = chromosome
@@ -108,7 +107,7 @@ def run(path = None):
 
         if max_validation_fitness > best_fitness_ever:
             best_fitness_ever = max_validation_fitness
-            print('Best fitness ever: {}'.format(best_fitness_ever))
+            #print('Best fitness ever: {}'.format(round(best_fitness_ever,2)))
             best_individual_ever = copy.deepcopy(best_individual_validation)
             if path:
                 print('Saving network to: {}'.format(path))
@@ -118,6 +117,49 @@ def run(path = None):
         print('Generation {}: Training fitness: {}, Validation fitness: {}'.format(
             generation, round(max_train_fitness,2), round(max_validation_fitness,2) )
         )
+
+    # Get results from trainging courses
+    score_matr, time_matr = decode_population([best_individual_ever], training_courses, consts.MAX_FRAMES)
+    fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+    train_fitness = round(fitness[0],2)
+    mean_train_score = round(np.mean(score_matr))
+
+    # Get results from validation courses
+    score_matr, time_matr = decode_population([best_individual_ever], validation_courses, consts.MAX_FRAMES)
+    fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+    val_fitness = round(fitness[0],2)
+    mean_val_score = round(np.mean(score_matr))
+
+
+    # Get results from testing courses
+    score_matr, time_matr = decode_population([best_individual_ever], testing_courses, consts.MAX_FRAMES)
+    fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+    test_fitness = round(fitness[0],2)
+    mean_test_score = round(np.mean(score_matr))
+
+    print("\nResults on test sets:")
+    print("Fitness:", round(test_fitness, 2))
+    print("Score:", round(mean_test_score))
+
+
+    res_line = ""
+    res_line += "Generations: {}\n".format(generations)
+    res_line += "Population size: {}\n".format(population_size)
+    res_line += "Network shape: {}\n".format(network_shape)
+    res_line += "Saved as: {}\n".format(path)
+    res_line += "TRAINING:   mean score: {}, fitness: {}, courses {}\n".format(mean_train_score, train_fitness, training_courses)
+    res_line += "VALIDATION: mean score: {}, fitness: {}, courses {}\n".format(mean_val_score, val_fitness, validation_courses)
+    res_line += "TESTING:    mean score: {}, fitness: {}, courses {}\n".format(mean_test_score, test_fitness, testing_courses)
+    res_line += "\n"
+
+    with open('ga_results_info.txt', 'a') as f:
+        f.write(res_line)
+
+    
+
+
+
+
 
 
        
