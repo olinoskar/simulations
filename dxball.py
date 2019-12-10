@@ -47,6 +47,7 @@ class Bricka:
         self.init_game(course_nbr)
         
     def init_game(self,course_nbr):
+        self.brick_state = []
         self.t0 = time.time()
         self.frames_run=0
         self.lives=1
@@ -74,7 +75,8 @@ class Bricka:
         self.ball_vel[0] += self.ball_vel[0]/2
         self.ball_vel[1] += self.ball_vel[0]/2
         matrix = 'Levels/level'+str(course_nbr)+'.csv'
-        level = np.genfromtxt(matrix)   
+        level = np.genfromtxt(matrix)            
+        self.brick_state = level
         level_width = len(level[0])
         level_height = len(level)
         y_ofs=25
@@ -109,8 +111,17 @@ class Bricka:
         
         x = [self.ball.left, self.ball.top]
         v = self.ball_vel
-        inputs = [x[0],x[1],v[0],v[1],self.paddle.left]
-             
+        
+#        brickInputs = np.ravel(self.brick_state)
+#        
+        a = self.brick_state
+        a_flat = a.reshape(a.shape[0]*a.shape[1])
+        brickInputs = [int(el) for el in a_flat]       
+        
+        otherInputs = [x[0],x[1],v[0],v[1],self.paddle.left]
+
+        inputs = brickInputs + otherInputs        
+        
         outputs = Network.prop_forward(self.network, inputs)
             
         new_action_allowed = (self.frames_run - self.frame_previous_movement
@@ -171,24 +182,49 @@ class Bricka:
     
     
     def handle_collisions(self):
+        iCount = -1           
+            
         for brick in self.bricks:
+            iCount += 1
+            indices = np.where(self.brick_state == 1)
+            iRow = indices[0][iCount]
+            iCol = indices[1][iCount]    
+            
+            
+            
             if self.ball.colliderect(brick):
+                
+                self.brick_state[iRow,iCol] = 0                
                 self.score +=10
                 self.ball_vel[1]=-self.ball_vel[1]
                 self.bricks.remove(brick)
                 
                 break
-                    
+            
+        jCount = -1
         for brick in self.red_bricks:
+            jCount += 1
+            indices = np.where(self.brick_state == 2)
+            iRow = indices[0][jCount]
+            iCol = indices[1][jCount]   
             if self.ball.colliderect(brick):
+                
+                self.brick_state[iRow,iCol] = 0     
                 self.score +=50
                 self.ball_vel[1]=-1.025*self.ball_vel[1]
                 self.red_bricks.remove(brick)
                 
                 break
             
+        kCount = -1
         for brick in self.blue_bricks:
+            kCount += 1
+            indices = np.where(self.brick_state == 3)
+            iRow = indices[0][kCount]
+            iCol = indices[1][kCount]  
             if self.ball.colliderect(brick):
+                
+                self.brick_state[iRow,iCol] = 0     
                 self.score +=100
                 self.ball_vel[1]=-1.10*self.ball_vel[1]
                 self.blue_bricks.remove(brick)
