@@ -1,0 +1,19 @@
+Test score: 60.0
+Test fitness: 42.24309765702975
+Generations: 1
+Network shape: [5, 10, 3]
+Training courses: [666]
+Validation courses: [666]
+Testing courses: [666]
+Saved as: None
+
+Test score: 210.0
+Test fitness: 104.97083333408351
+Generations: 3
+Population size: 20
+Network shape: [5, 10, 3]
+Training courses: [666]
+Validation courses: [666]
+Testing courses: [666]
+Saved as: None
+
