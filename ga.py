@@ -3,7 +3,8 @@ from dxball import play_game
 import numpy as np
 import copy
 from pprint import pprint
-import constants as consts 
+import constants as consts
+#import test_constants as consts
 import argparse
 
 

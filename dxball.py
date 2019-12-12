@@ -116,7 +116,7 @@ class Bricka:
         keys=pygame.key.get_pressed()
         
         
-        boost_factor = 1  # 1 => no extra effect
+        boost_factor = 2  # 1 => no extra effect
         
         x = [self.ball.left, self.ball.top]
         v = self.ball_vel
@@ -127,7 +127,7 @@ class Bricka:
         
         otherInputs = [x[0],x[1],v[0],v[1],self.paddle.left]
 
-
+        print("self.network",self.network)
         nbr_input_neurons = self.network.W[0].shape[1]
         
         if nbr_input_neurons == 77:
