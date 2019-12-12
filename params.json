@@ -1,0 +1,8 @@
+[
+    {
+        "name": "RunEvolution",
+        "network_layouts": [[5,20,3],[5,20,20,3],[5,20,20,20,3],
+                            [77,20,3],[77,20,20,3],[77,20,20,20,3]],  # 6 shapes
+        "stochastic_spawns": [True,False]
+    }
+]

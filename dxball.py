@@ -433,9 +433,9 @@ class Bricka:
         
 
     
-def play_game(network,use_network=0,course_nbr=666,display_game=0,fps=50,
+def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,
               max_nbr_frames=1e5, initial_velocity = 5, velocity_exponents = [1.010, 1.025, 1.050],
-              stochastic_spawning = True, velocity_factor = 0.5):
+              stochastic_spawning = True, velocity_factor = 1):
     '''
     [] Courses are defined as 'level<course_nbr>.csv'. The standard course is 666.
         
