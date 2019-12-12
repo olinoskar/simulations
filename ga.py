@@ -46,13 +46,13 @@ def run_ga(
         * population_size (int): Number of individals in the population.
     """
 
-    training_courses = [666]
-    validation_courses = [666] 
-    testing_courses = [666] 
+    training_courses = [666, 666, 666]
+    validation_courses = [666, 666, 666] 
+    testing_courses = [666, 666, 666] 
 
     population = initialize(population_size, network_shape)
 
-    time_fun = np.vectorize(time_effect) # Used to penalize the elapsed time of a run
+    time_pen = np.vectorize(time_effect) # Used to penalize the elapsed time of a run
 
 
     assert len(population)==population_size
@@ -68,7 +68,7 @@ def run_ga(
             mutation_rate = 0.9999999999
 
         score_matr, time_matr = decode_population(population, training_courses, consts.MAX_FRAMES)
-        fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+        fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
         res = np.where(fitness == max(fitness))
         best_index = res[0][0]
   
@@ -100,7 +100,7 @@ def run_ga(
 
         # Validation
         score_matr, time_matr = decode_population(population, validation_courses, consts.MAX_FRAMES)
-        fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+        fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
         res = np.where(fitness == np.amax(fitness))
         best_index = res[0][0]
         best_individual_validation = copy.deepcopy(population[best_index])
@@ -121,20 +121,20 @@ def run_ga(
 
     # Get results from trainging courses
     score_matr, time_matr = decode_population([best_individual_ever], training_courses, consts.MAX_FRAMES)
-    fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+    fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
     train_fitness = round(fitness[0],2)
     mean_train_score = round(np.mean(score_matr))
 
     # Get results from validation courses
     score_matr, time_matr = decode_population([best_individual_ever], validation_courses, consts.MAX_FRAMES)
-    fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+    fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
     val_fitness = round(fitness[0],2)
     mean_val_score = round(np.mean(score_matr))
 
 
     # Get results from testing courses
     score_matr, time_matr = decode_population([best_individual_ever], testing_courses, consts.MAX_FRAMES)
-    fitness = evaluate_population(score_matr, time_matr, time_fun, consts.MAX_FRAMES)
+    fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
     test_fitness = round(fitness[0],2)
     mean_test_score = round(np.mean(score_matr))
 
@@ -197,13 +197,13 @@ def decode_chromosome(chromosome, courses, frames):
     return np.array(scores), np.array(play_times)
 
 
-def evaluate_population(score_matr, time_matr, time_fun, frames):
+def evaluate_population(score_matr, time_matr, time_pen, frames):
     """
     Evaluate all individuals in population. At the moment the fitness is taken
     as the mean of score*play_time on each score.
     """
     n_courses = score_matr.shape[1]
-    time_matr = time_fun(time_matr, frames)
+    time_matr = time_pen(time_matr, frames)
 
     score_time = score_matr*time_matr
     score_time_sum = score_time.sum(axis=1)

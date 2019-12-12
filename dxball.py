@@ -61,7 +61,7 @@ class Bricka:
         self.frames_run=0
         self.lives=1
         self.score=0
-        self.padVelocity = 18
+        self.padVelocity = 8
         self.nbrLevelsCleared = 0
         self.state=STATE_BALL_IN_PADDLE
         self.spawn_prob = 0.5
@@ -70,7 +70,8 @@ class Bricka:
         self.frames_between_actions = 2  # base value
         self.network = []
         self.initial_velocity = 0  
-        self.velocity_exponents = []     
+        self.velocity_exponents = []   
+        self.velocity_factor = 1  
         
         self.paddle= pygame.Rect(300,PADDLE_Y,PADDLE_WIDTH,PADDLE_HEIGHT)
         self.ball=   pygame.Rect(300,PADDLE_Y-BALL_DIAMETER,BALL_DIAMETER,BALL_DIAMETER)
@@ -79,8 +80,6 @@ class Bricka:
         self.create_bricks(course_nbr)
   
     def create_bricks(self,course_nbr):
-        self.ball_vel[0] += self.ball_vel[0]/2
-        self.ball_vel[1] += self.ball_vel[0]/2
         matrix = 'Levels/level'+str(course_nbr)+'.csv'
         level = np.genfromtxt(matrix)            
         self.brick_state = level
@@ -217,6 +216,8 @@ class Bricka:
                 
                 self.brick_state[iRow,iCol] = 0     
                 self.score +=50
+
+                self.ball_vel[0]=+self.ball_vel[0]*self.velocity_exponents[1]
                 self.ball_vel[1]=-self.ball_vel[1]*self.velocity_exponents[1]
                 self.red_bricks.remove(brick)
                 
@@ -233,6 +234,7 @@ class Bricka:
                 
                 self.brick_state[iRow,iCol] = 0     
                 self.score +=100
+                self.ball_vel[0]=+self.ball_vel[0]*self.velocity_exponents[2]
                 self.ball_vel[1]=-self.ball_vel[1]*self.velocity_exponents[2]
                 self.blue_bricks.remove(brick)
                 
@@ -248,6 +250,18 @@ class Bricka:
             diff = self.ball.left - self.paddle.left
             
             phi = np.pi*(1-diff/PADDLE_WIDTH)
+            print(phi)
+
+            v = 0.1 if np.random.random() < 0.5 else -0.1
+            tol = 0.5
+            if np.abs(phi-np.pi/2)<tol:
+                phi+=v
+            elif np.abs(phi-np.pi)<tol:
+                phi = 3*np.pi/4
+            elif np.abs(phi)<tol:
+                phi = np.pi/4
+
+                
             
             v = np.linalg.norm(self.ball_vel)
             v_new = v*self.velocity_exponents[0]
@@ -329,10 +343,15 @@ class Bricka:
         new_vals = np.random.choice([0,1,2,3], size = n, p=[1-PROB_GRAY-PROB_BLUE-PROB_RED, PROB_GRAY, PROB_RED, PROB_BLUE])
 
         for i in range(n):
-            self.brick_state[indices[0][i], indices[1][i]] = new_vals[i]
 
             x_ofs = 25 + indices[1][i]*(BRICK_WIDTH + 10)
             y_ofs = 25 + indices[0][i]*(BRICK_HEIGHT+ 5)
+
+            if y_ofs > self.ball.top:
+                continue
+
+            self.brick_state[indices[0][i], indices[1][i]] = new_vals[i]
+            
             if new_vals[i] == 1:
                 self.bricks.append(pygame.Rect(x_ofs,y_ofs,BRICK_WIDTH,BRICK_HEIGHT))
             elif new_vals[i] == 2:
@@ -343,29 +362,24 @@ class Bricka:
 
     
     def run(self,network,use_network,course_nbr,display_game,fps,max_nbr_frames,
-            initial_velocity,velocity_exponents,brownian_motion):
+            initial_velocity,velocity_exponents,brownian_motion,stochastic_spawning,velocity_factor):
         
+        
+        self.padVelocity = self.padVelocity * velocity_factor
+        self.ball_vel[0] = velocity_factor*self.ball_vel[0]
+        self.ball_vel[1] = velocity_factor*self.ball_vel[1]
+
+        self.brownian_motion = brownian_motion
+        self.initial_velocity = initial_velocity*velocity_factor  
+        self.velocity_exponents = velocity_exponents              
+        self.network = network            
+        self.use_network = use_network
+
         while 1:
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
-                    
-            # Print velocity
-            vel = np.linalg.norm(self.ball_vel)
-            if vel > 10:
-                print("Ball velocity > 10")
-            elif vel > 15:
-                print("Ball velocity > 15")
-            elif vel > 20:
-                print("Ball velocity > 20")
-            elif vel > 25:
-                print("Ball velocity > 25")
-            
-            self.brownian_motion = brownian_motion
-            self.initial_velocity = initial_velocity  
-            self.velocity_exponents = velocity_exponents              
-            self.network = network            
-            self.use_network = use_network
+
             self.clock.tick(fps)
             self.screen.fill(BLACK)
             self.check_input(course_nbr)
@@ -396,16 +410,17 @@ class Bricka:
             if display_game:
                 pygame.display.flip()
 
-            if np.random.random() < 0.01:
-                self.generate_new_bricks()
-                self.draw_bricks()
+            if stochastic_spawning:
+                if np.random.random() < 0.01:
+                    self.generate_new_bricks()
+                    self.draw_bricks()
         
 
     
 def play_game(network,use_network=0,course_nbr=666,display_game=0,fps=50,
               max_nbr_frames=1e5, score_exponent=1, frame_exponent=1,
               initial_velocity = 7.5, velocity_exponents = [1.015, 1.025, 1.05],
-              brownian_motion=0):
+              brownian_motion=0, stochastic_spawning = True, velocity_factor = 0.3):
     '''
     [] Courses are defined as 'level<course_nbr>.csv'. The standard course is 666.
     
@@ -432,9 +447,10 @@ def play_game(network,use_network=0,course_nbr=666,display_game=0,fps=50,
     '''
     b = Bricka(course_nbr)
     score, frames_run = b.run(network,use_network,course_nbr,
-                              display_game,fps,max_nbr_frames,
+                              display_game,fps/velocity_factor,max_nbr_frames,
                               initial_velocity,velocity_exponents,
-                              brownian_motion)
+                              brownian_motion, stochastic_spawning,
+                              velocity_factor)
     
     fitness = score**(np.float(score_exponent))*frames_run**(np.float(frame_exponent))
     """

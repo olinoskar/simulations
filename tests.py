@@ -39,17 +39,17 @@ def test_network_save_and_load():
 
 def test_play_game_with_network():
 
-    path = 'results/oskar3'
+    path = 'results/oskar4'
 
     print_header('Testing game with network {}'.format(path))
 
     try:
-        network = Network([5,3,3])
+        network = Network([77,10,3])
         network.load(path=path)
 
         score, frames_run, fitness = play_game(
             network,
-            use_network=1,
+            use_network=0,
             course_nbr=666,
             display_game=1,
             fps=50,
