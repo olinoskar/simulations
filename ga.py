@@ -29,9 +29,11 @@ def main():
 
 def run_ga(
     path=None,
-    network_shape=[77, 10, 3],
+    network_shape=[5, 10, 3],
     generations = consts.N_GENERATIONS,
-    population_size = consts.POPULATION_SIZE
+    population_size = consts.POPULATION_SIZE,
+    fitness_function = 'score',
+    stochastic_spawning = False
     ):
 
 
@@ -46,6 +48,7 @@ def run_ga(
         * population_size (int): Number of individals in the population.
     """
 
+
     training_courses = [666, 666, 666]
     validation_courses = [666, 666, 666] 
     testing_courses = [666, 666, 666] 
@@ -54,8 +57,6 @@ def run_ga(
 
     time_pen = np.vectorize(time_effect) # Used to penalize the elapsed time of a run
 
-
-    assert len(population)==population_size
 
     best_fitness_ever = 0
     best_individual_ever = 0
@@ -67,11 +68,8 @@ def run_ga(
         if mutation_rate > 1:
             mutation_rate = 0.9999999999
 
-        score_matr, time_matr = decode_population(population, training_courses, consts.MAX_FRAMES)
-        fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
-        res = np.where(fitness == max(fitness))
-        best_index = res[0][0]
-  
+        score_matr, time_matr = decode_population(population, training_courses, consts.MAX_FRAMES, stochastic_spawning)
+        fitness, best_index = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
         best_individual = copy.deepcopy(population[best_index])
         max_train_fitness = fitness[best_index]
 
@@ -99,10 +97,8 @@ def run_ga(
         population = copy.deepcopy(tmp_pop)
 
         # Validation
-        score_matr, time_matr = decode_population(population, validation_courses, consts.MAX_FRAMES)
-        fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
-        res = np.where(fitness == np.amax(fitness))
-        best_index = res[0][0]
+        score_matr, time_matr = decode_population(population, validation_courses, consts.MAX_FRAMES, stochastic_spawning)
+        fitness, best_index = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
         best_individual_validation = copy.deepcopy(population[best_index])
         max_validation_fitness = fitness[best_index]
 
@@ -120,21 +116,21 @@ def run_ga(
         )
 
     # Get results from trainging courses
-    score_matr, time_matr = decode_population([best_individual_ever], training_courses, consts.MAX_FRAMES)
-    fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
+    score_matr, time_matr = decode_population([best_individual_ever], training_courses, consts.MAX_FRAMES, stochastic_spawning)
+    fitness,_ = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
     train_fitness = round(fitness[0],2)
     mean_train_score = round(np.mean(score_matr))
 
     # Get results from validation courses
-    score_matr, time_matr = decode_population([best_individual_ever], validation_courses, consts.MAX_FRAMES)
-    fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
+    score_matr, time_matr = decode_population([best_individual_ever], validation_courses, consts.MAX_FRAMES, stochastic_spawning)
+    fitness,_ = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
     val_fitness = round(fitness[0],2)
     mean_val_score = round(np.mean(score_matr))
 
 
     # Get results from testing courses
-    score_matr, time_matr = decode_population([best_individual_ever], testing_courses, consts.MAX_FRAMES)
-    fitness = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES)
+    score_matr, time_matr = decode_population([best_individual_ever], testing_courses, consts.MAX_FRAMES, stochastic_spawning)
+    fitness,_ = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
     test_fitness = round(fitness[0],2)
     mean_test_score = round(np.mean(score_matr))
 
@@ -143,6 +139,7 @@ def run_ga(
     print("Score:", round(mean_test_score))
 
 
+    """
     res_line = ""
     res_line += "Generations: {}\n".format(generations)
     res_line += "Population size: {}\n".format(population_size)
@@ -155,16 +152,31 @@ def run_ga(
 
     with open('ga_results_info.txt', 'a') as f:
         f.write(res_line)
+    """
+
+
+    res_line = "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}\n".format(
+        path,
+        mean_train_score,
+        mean_val_score,
+        mean_test_score,
+        round(train_fitness,2),
+        round(val_fitness,2),
+        round(test_fitness,2),
+        generations,
+        population_size,
+        fitness_function,
+        stochastic_spawning,
+        len(training_courses),
+        network_shape,
+        mutation_rate
+        )
+
+    with open('ga_results.txt', 'a') as f:
+        f.write(res_line)
+
 
     
-
-
-
-
-
-
-       
-
 
 def initialize(pop_size, network_shape):
     """ Initialize population of Neural Networks """
@@ -174,42 +186,79 @@ def initialize(pop_size, network_shape):
         population.append(nn)
     return population
 
-def decode_population(population, courses, frames):
+def decode_population(population, courses, frames, stochastic_spawning):
     pop_size = len(population)
     score_matr = np.zeros(shape = (pop_size, len(courses)) )
     time_matr = np.zeros(shape = (pop_size, len(courses)) )
     for i, individual in enumerate(population):
         chromosome = individual
-        scores, play_times = decode_chromosome(chromosome, courses, frames)
+        scores, play_times = decode_chromosome(chromosome, courses, frames, stochastic_spawning)
+
         score_matr[i,:] = scores
         time_matr[i,:] = play_times
+
+
     return score_matr, time_matr
 
 
-def decode_chromosome(chromosome, courses, frames):
+def decode_chromosome(chromosome, courses, frames, stochastic_spawning):
     """ Decode chromosome by letting it play the game"""
     network = chromosome
     scores, play_times = [], []
     for course in courses:
-        score, play_time,_ = play_game(network, course_nbr=course, max_nbr_frames = frames, fps=5000)
+        score, play_time = play_game(
+            network = network,
+            use_network = 1,
+            display_game = 0,
+            course_nbr=course,
+            max_nbr_frames = frames,
+            fps=5000,
+            stochastic_spawning = stochastic_spawning
+        )
+        #print('score:', score)
+        #print('play_time:', play_time)
+
+
         scores.append(score)
         play_times.append(play_time)
+    #print('---')
+    #print('scores:', scores)
+    #print('play_times:', play_times)
+
+
     return np.array(scores), np.array(play_times)
 
 
-def evaluate_population(score_matr, time_matr, time_pen, frames):
+def evaluate_population(score_matr, time_matr, time_pen, frames, fitness_function):
     """
     Evaluate all individuals in population. At the moment the fitness is taken
     as the mean of score*play_time on each score.
     """
-    n_courses = score_matr.shape[1]
-    time_matr = time_pen(time_matr, frames)
 
-    score_time = score_matr*time_matr
-    score_time_sum = score_time.sum(axis=1)
-    fitness = score_time_sum / n_courses
-    #fitness = score_matr.sum(axis=1) / n_courses
-    return fitness
+    n_courses = score_matr.shape[1]
+
+    if fitness_function == 'score':
+        score_sum = score_matr.sum(axis=1)
+        fitness = score_sum / n_courses
+
+    elif fitness_function == 'score_time':
+        score_time = score_matr*time_matr
+        score_time_sum = score_time.sum(axis=1)
+        fitness = score_time_sum / n_courses
+
+    elif fitness_function == 'score_time_pen':
+        time_matr = time_pen(time_matr, frames)
+        score_time = score_matr*time_matr
+        score_time_sum = score_time.sum(axis=1)
+        fitness = score_time_sum / n_courses
+
+    else:
+        raise ValueError("Fitness functions not allowed: {}".format(fitness_function))
+
+    res = np.where(fitness == max(fitness))
+    best_index = res[0][0]
+    return fitness, best_index
+
 
 
 def mutate_individual(population, mutation_parameter, creep_rate):
@@ -297,10 +346,6 @@ def insert_best_individual(population, best_individual, n_copies):
 
 def time_effect(played_time, frames):
     return 1 - 1/(1+np.exp(-played_time/frames+1))
-
-
-
-
 
 
 

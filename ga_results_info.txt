@@ -49,3 +49,19 @@ TRAINING:   mean score: 60.0, fitness: 43.86, courses [666, 666, 666]
 VALIDATION: mean score: 60.0, fitness: 43.86, courses [666, 666, 666]
 TESTING:    mean score: 60.0, fitness: 43.86, courses [666, 666, 666]
 
+Generations: 5
+Population size: 20
+Network shape: [77, 10, 3]
+Saved as: None
+TRAINING:   mean score: 50.0, fitness: 36.55, courses [666, 666, 666]
+VALIDATION: mean score: 50.0, fitness: 36.55, courses [666, 666, 666]
+TESTING:    mean score: 50.0, fitness: 36.55, courses [666, 666, 666]
+
+Generations: 5
+Population size: 20
+Network shape: [77, 10, 3]
+Saved as: None
+TRAINING:   mean score: 50.0, fitness: 36.55, courses [666, 666, 666]
+VALIDATION: mean score: 50.0, fitness: 36.55, courses [666, 666, 666]
+TESTING:    mean score: 50.0, fitness: 36.55, courses [666, 666, 666]
+
