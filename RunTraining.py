@@ -40,7 +40,6 @@ def str2bool(v):
 
 if __name__ == '__main__': 
 
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--path',
         help='Name of directory to save the network to')
@@ -68,10 +67,7 @@ if __name__ == '__main__':
     print('Saving to: ', path)
     print('Stochastic spawning:', stoch)
     print('Network layout:', layout)
-
-    import sys
-    sys.exit()
-
+    print('==============================')
 
     run_ga(
         path=path,
