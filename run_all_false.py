@@ -38,9 +38,8 @@ def main():
              [n_inputs,n_hidden,n_hidden,3],
              [n_inputs,n_hidden,n_hidden,n_hidden,3]
             ]
-            nbr_layers = 0
+            nbr_layers = 2
             for shape in shapes:
-                nbr_layers += 1
                 run_ga(
                     path='ResultsGustaf/Stoch=False/inputs='+str(n_inputs)+'_n_hidden_layers='+str(nbr_layers)+'_neurons='+str(n_hidden),
                     network_shape=shape,
@@ -49,6 +48,7 @@ def main():
                     fitness_function = 'score',
                     stochastic_spawning = stoch_bool
                 )
+                nbr_layers += 1
 
     return
 
