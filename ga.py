@@ -6,6 +6,9 @@ from pprint import pprint
 import constants as consts
 #import test_constants as consts
 import argparse
+import multiprocessing as mp
+import sys
+
 
 
 """
@@ -21,10 +24,61 @@ Arguments:
 
 def main():
 
+    import os
+    os.environ["SDL_VIDEODRIVER"] = "dummy"
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--path', help='Name of the first file')
+    parser.add_argument('path', help='Name of the first file')
+    parser.add_argument("neurons", type=int, help="Number of neurons in hidden layers")
+    parser.add_argument("-i","--input_neurons", type=int, default = 77,
+        help="Number of neurons in input layer. Default: 77. Allowed: [5, 77]")
+    parser.add_argument('-s', "--stochastic_spawning", type=str2bool, nargs='?',
+        const=True, default=True,
+        help="Stochastic spwaning or not (true or false), default: true")
+    parser.add_argument('-g', "--generations", type=int, default=500, help="Number of generations")
+    parser.add_argument('-ps', "--pop_size", type=int, default=30, help="Size of the population")
     args = parser.parse_args()
+
+
+    inp = args.input_neurons
+    hidden = args.neurons
+    if inp not in [5,77]:
+        print("Number of input neurons must be either 5 or 77. Exiting!")
+        sys.exit()
+
+    layouts = [
+        [inp, 3],
+        [inp, hidden, 3],
+        [inp, hidden, hidden, 3],
+        [inp, hidden, hidden, hidden, 3],
+        [inp, hidden, hidden, hidden, hidden, 3],
+        [inp, hidden, hidden, hidden, hidden, hidden, 3],
+    ]
+
+    for layout in layouts:
+        print('\nTraining\n--------\nLayout:', layout)
+        print('Path:', args.path)
+        print('=================\n')
+        run_ga(
+            path=args.path,
+            network_shape=layout,
+            generations = args.generations,
+            population_size = args.pop_size,
+            fitness_function = 'score',
+            stochastic_spawning = args.stochastic_spawning
+        )
+
+
+
+
+
+    return
+
+
+
+
     run_ga(path = args.path)
+
 
 
 
@@ -217,13 +271,12 @@ def decode_population(population, courses, frames, stochastic_spawning):
         score_matr[i,:] = scores
         time_matr[i,:] = play_times
 
-
     return score_matr, time_matr
-
 
 def decode_chromosome(chromosome, courses, frames, stochastic_spawning):
     """ Decode chromosome by letting it play the game"""
     network = chromosome
+
     scores, play_times = [], []
     for course in courses:
         score, play_time = play_game(
@@ -239,8 +292,6 @@ def decode_chromosome(chromosome, courses, frames, stochastic_spawning):
         scores.append(score)
         play_times.append(play_time)
 
-
-
     return np.array(scores), np.array(play_times)
 
 
@@ -255,6 +306,7 @@ def evaluate_population(score_matr, time_matr, time_pen, frames, fitness_functio
     if fitness_function == 'score':
         score_sum = score_matr.sum(axis=1)
         fitness = score_sum / n_courses
+
 
     elif fitness_function == 'score_time':
         score_time = score_matr*time_matr
@@ -362,6 +414,16 @@ def insert_best_individual(population, best_individual, n_copies):
 
 def time_effect(played_time, frames):
     return 1 - 1/(1+np.exp(-played_time/frames+1))
+
+def str2bool(v): # for parsing of stochastic spawning argument
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 

@@ -2,6 +2,8 @@
 from ga import run_ga
 from datetime import datetime
 import argparse
+import os
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 #now = datetime.now().strftime("%d/%m/%Y-%H:%M:%S")
 
