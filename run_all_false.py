@@ -28,7 +28,7 @@ def main():
     inputs = [5,77]
     hidden = [5,10,20]
     pop_size = 20
-    nbr_generations = 50
+    nbr_generations = 30
     stoch_bool = False
     
     for n_inputs in inputs:
@@ -36,9 +36,7 @@ def main():
             shapes = [
              [n_inputs,n_hidden,3],
              [n_inputs,n_hidden,n_hidden,3],
-             [n_inputs,n_hidden,n_hidden,n_hidden,3],
-             [n_inputs,n_hidden,n_hidden,n_hidden,n_hidden,3],
-             [n_inputs,n_hidden,n_hidden,n_hidden,n_hidden,n_hidden,3],
+             [n_inputs,n_hidden,n_hidden,n_hidden,3]
             ]
             nbr_layers = 0
             for shape in shapes:

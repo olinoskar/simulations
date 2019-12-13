@@ -26,19 +26,17 @@ def main():
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     
     inputs = [5,77]
-    hidden = [5,10,20,50]
-    pop_size = 40
-    nbr_generations = 250
+    hidden = [5,10,20]
+    pop_size = 20
+    nbr_generations = 30
     stoch_bool = True
     
     for n_inputs in inputs:
         for n_hidden in hidden:
             shapes = [
-             [n_inputs,n_hidden,3],
+             #[n_inputs,n_hidden,3],
              [n_inputs,n_hidden,n_hidden,3],
-             [n_inputs,n_hidden,n_hidden,n_hidden,3],
-             [n_inputs,n_hidden,n_hidden,n_hidden,n_hidden,3],
-             [n_inputs,n_hidden,n_hidden,n_hidden,n_hidden,n_hidden,3],
+             [n_inputs,n_hidden,n_hidden,n_hidden,3]
             ]
             nbr_layers = 0
             for shape in shapes:
