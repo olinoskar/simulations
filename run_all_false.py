@@ -44,7 +44,7 @@ def main():
             for shape in shapes:
                 nbr_layers += 1
                 run_ga(
-                    path='inputs='+str(n_inputs)+'_n_hidden_layers='+str(nbr_layers)+'_neurons='+str(n_hidden),
+                    path='ResultsGustaf/inputs='+str(n_inputs)+'_n_hidden_layers='+str(nbr_layers)+'_neurons='+str(n_hidden),
                     network_shape=shape,
                     generations = nbr_generations,
                     population_size = pop_size,
