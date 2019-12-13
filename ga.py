@@ -55,12 +55,14 @@ def main():
         [inp, hidden, hidden, hidden, hidden, hidden, 3],
     ]
 
-    for layout in layouts:
+    for n, layout in enumerate(layouts):
+
+        path = '{}_{}'.format(args.path, n)
         print('\nTraining\n--------\nLayout:', layout)
-        print('Path:', args.path)
+        print('Path:', path)
         print('=================\n')
         run_ga(
-            path=args.path,
+            path=path,
             network_shape=layout,
             generations = args.generations,
             population_size = args.pop_size,
