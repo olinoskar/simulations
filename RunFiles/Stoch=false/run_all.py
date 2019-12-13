@@ -25,27 +25,32 @@ def main():
     import os
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     
-    n_inputs = 5
-    n_hidden = 5
-    shapes = [
-     [n_inputs,n_hidden,3],
-     [n_inputs,n_hidden,n_hidden,3],
-     [n_inputs,n_hidden,n_hidden,n_hidden,3],
-     [n_inputs,n_hidden,n_hidden,n_hidden,n_hidden,3],
-     [n_inputs,n_hidden,n_hidden,n_hidden,n_hidden,n_hidden,3],
-    ]
+    inputs = [5,77]
+    hidden = [5,10,20,50]
+    pop_size = 40
+    nbr_generations = 250
+    stoch_bool = False
     
-    j = 0
-    for shape in shapes:
-        j += 1
-        run_ga(
-            path='inputs='+str(n_inputs)+'_n_hidden_layers='+str(j)+'_neurons='+str(n_hidden),
-            network_shape=shape,
-            generations = 1,
-            population_size = 20,
-            fitness_function = 'score',
-            stochastic_spawning = True
-    )
+    for n_inputs in inputs:
+        for n_hidden in hidden:
+            shapes = [
+             [n_inputs,n_hidden,3],
+             [n_inputs,n_hidden,n_hidden,3],
+             [n_inputs,n_hidden,n_hidden,n_hidden,3],
+             [n_inputs,n_hidden,n_hidden,n_hidden,n_hidden,3],
+             [n_inputs,n_hidden,n_hidden,n_hidden,n_hidden,n_hidden,3],
+            ]
+            nbr_layers = 0
+            for shape in shapes:
+                nbr_layers += 1
+                run_ga(
+                    path='inputs='+str(n_inputs)+'_n_hidden_layers='+str(nbr_layers)+'_neurons='+str(n_hidden),
+                    network_shape=shape,
+                    generations = nbr_generations,
+                    population_size = pop_size,
+                    fitness_function = 'score',
+                    stochastic_spawning = stoch_bool
+                )
 
     return
 
