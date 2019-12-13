@@ -59,26 +59,44 @@ def run_ga(
     time_pen = np.vectorize(time_effect) # Used to penalize the elapsed time of a run
 
 
-    best_fitness_ever = 0
-    best_individual_ever = 0
+    best_train_fitness_ever = 0
+    best_validation_fitness = 0
+    best_validation_generation = 0
+    best_individual_ever = None
+    
        
+    # Initiate mutation as 1/m, where m is the number of genes
     min_mut_rate = 0
     for i in range(len(network_shape)-1):
         min_mut_rate += network_shape[i+1]*network_shape[i]
         min_mut_rate += network_shape[i+1]
     min_mut_rate = 1/min_mut_rate
 
+
+    # Start training
     for generation in range(generations):
 
+        # Set mutation rate according to a + exp(-g*b)
         mutation_rate = min_mut_rate + np.exp(-generation*consts.MUT_RED_RATE)
         if mutation_rate > 1:
             mutation_rate = 0.9999999999
 
+        # Evaluate population on training courses
         score_matr, time_matr = decode_population(population, training_courses, consts.MAX_FRAMES, stochastic_spawning)
         fitness, best_index = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
         best_individual = copy.deepcopy(population[best_index])
         max_train_fitness = fitness[best_index]
 
+        # Store (and save) the best individual if this is the best fitness ever
+        if max_train_fitness > best_train_fitness_ever:
+            best_train_fitness_ever = max_train_fitness
+            best_individual_ever = copy.deepcopy(best_individual)
+            if path:
+                print('Saving network to: {}'.format(path))
+                best_individual_ever.save(path = path)
+
+
+        # Create a temporary population and perform tournament selection, crossover and mutation
         tmp_pop = copy.deepcopy(population)
         for i in range(0, population_size, 2):
             i1 = tournament_select(fitness, consts.TS_PARAM, consts.TS_SIZE)
@@ -105,34 +123,34 @@ def run_ga(
 
             tmp_pop[i] = mutated_chromosome
 
+        # Elistism step
         tmp_pop = insert_best_individual(tmp_pop, best_individual, consts.N_COPIES)
+
+        # Set population to the temporary
         population = copy.deepcopy(tmp_pop)
 
-        # Validation
-        if generation%5==0:
-            score_matr, time_matr = decode_population(population, validation_courses, consts.MAX_FRAMES, stochastic_spawning)
-            fitness, best_index = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
-            best_individual_validation = copy.deepcopy(population[best_index])
-            max_validation_fitness = fitness[best_index]
+        # Run the best individual on the validation courses (sometimes)
+        if generation > 100 and generation%5==0:
+            score_matr, time_matr = decode_population([best_individual], validation_courses, consts.MAX_FRAMES, stochastic_spawning)
+            fitness,_ = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
+            val_fitness = fitness[0]
 
-            if max_validation_fitness > best_fitness_ever:
-                best_fitness_ever = max_validation_fitness
-                #print('Best fitness ever: {}'.format(round(best_fitness_ever,2)))
-                best_individual_ever = copy.deepcopy(best_individual_validation)
-                if path:
-                    print('Saving network to: {}'.format(path))
-                    best_individual_ever.save(path = path)
-
-            
+            if val_fitness > best_validation_fitness:
+                best_validation_fitness = val_fitness
+                best_validation_generation = generation
+            elif generation - best_validation_generation > 50:
+                print("Results are not improving. Done training!")
+                break;
+  
             print('Generation {}: Training fitness: {}, Validation fitness: {}'.format(
-                generation, round(max_train_fitness,2), round(max_validation_fitness,2) )
+                generation, round(max_train_fitness,2), round(best_validation_fitness,2) )
             )
         else:
             print('Generation {}: Training fitness: {}'.format(
                 generation, round(max_train_fitness,2))
             )
 
-    # Get results from trainging courses
+    # Get results from training courses
     score_matr, time_matr = decode_population([best_individual_ever], training_courses, consts.MAX_FRAMES, stochastic_spawning)
     fitness,_ = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
     train_fitness = round(fitness[0],2)
@@ -165,7 +183,7 @@ def run_ga(
         round(train_fitness,2),
         round(val_fitness,2),
         round(test_fitness,2),
-        generations,
+        generation,
         population_size,
         fitness_function,
         stochastic_spawning,

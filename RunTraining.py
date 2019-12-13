@@ -43,22 +43,26 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--path',
         help='Name of directory to save the network to')
-    parser.add_argument('-s', "--stochastic_spawning", type=str2bool, nargs='?',
-        const=True, default=False,
-        help="Stochastic spwaning or not (true or false)")
     parser.add_argument('-l', "--network_layout",
         help = 'Layout of network. Should be passed as a string, example: -l="77, 10, 10, 3"')
+    parser.add_argument('-s', "--stochastic_spawning", type=str2bool, nargs='?',
+        const=True, default=True,
+        help="Stochastic spwaning or not (true or false), default: true")
+    parser.add_argument('-g', "--generations", type=int, default=200, help="Number of generations")
+    parser.add_argument('-ps', "--pop_size", type=int, default=20, help="Size of the population")
     args = parser.parse_args()
 
-    if not args.path or not args.stochastic_spawning or not args.network_layout:
-        print('All arguments must be passed. Exiting')
-        import sys
-        sys.exit()
+    if not args.path or not args.network_layout:
+        print('Path and network layout must be passed as arguments. Exiting!')
+        import sys; sys.exit()
 
 
     path = args.path
     stoch = args.stochastic_spawning
     layout_str = args.network_layout
+    generations = args.generations
+    pop_size = args.pop_size
+
 
     layout = []
     for s in layout_str.split(','):
@@ -73,6 +77,8 @@ if __name__ == '__main__':
         path=path,
         network_shape=layout,
         fitness_function = 'score',
-        stochastic_spawning = stoch
+        stochastic_spawning = stoch,
+        generations = generations,
+        population_size = pop_size,
         ) 
      
