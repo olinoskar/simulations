@@ -26,9 +26,9 @@ def main():
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     
     inputs = [5,77]
-    hidden = [5,10,20,50]
-    pop_size = 40
-    nbr_generations = 250
+    hidden = [5,10,20]
+    pop_size = 20
+    nbr_generations = 50
     stoch_bool = False
     
     for n_inputs in inputs:
