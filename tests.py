@@ -39,7 +39,7 @@ def test_network_save_and_load():
 
 def test_play_game_with_network():
 
-    path = 'results/oskar4'
+    path = 'results/oskar7'
 
     print_header('Testing game with network {}'.format(path))
 
@@ -47,16 +47,15 @@ def test_play_game_with_network():
         network = Network([77,10,3])
         network.load(path=path)
 
-        score, frames_run, fitness = play_game(
+        score, frames_run = play_game(
             network,
-            use_network=0,
+            use_network=1,
             course_nbr=666,
             display_game=1,
             fps=50,
-            max_nbr_frames=10000,
-            score_exponent=1, 
-            frame_exponent=1
+            max_nbr_frames=10000
             )
+        print(score)
         print_success('TEST SUCCESSFUL!')
         return True
     except Exception as e:

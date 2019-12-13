@@ -30,11 +30,11 @@ def main():
 
 def run_ga(
     path=None,
-    network_shape=[5, 10, 3],
+    network_shape=[77, 10, 10, 3],
     generations = consts.N_GENERATIONS,
     population_size = consts.POPULATION_SIZE,
     fitness_function = 'score',
-    stochastic_spawning = False
+    stochastic_spawning = True
     ):
 
 
@@ -62,10 +62,15 @@ def run_ga(
     best_fitness_ever = 0
     best_individual_ever = 0
        
+    min_mut_rate = 0
+    for i in range(len(network_shape)-1):
+        min_mut_rate += network_shape[i+1]*network_shape[i]
+        min_mut_rate += network_shape[i+1]
+    min_mut_rate = 1/min_mut_rate
 
     for generation in range(generations):
 
-        mutation_rate = consts.MIN_MUT_PROB + np.exp(-generation*consts.MUT_RED_RATE)
+        mutation_rate = min_mut_rate + np.exp(-generation*consts.MUT_RED_RATE)
         if mutation_rate > 1:
             mutation_rate = 0.9999999999
 
@@ -83,7 +88,10 @@ def run_ga(
             chromosome2 = population[i2]
 
             if np.random.random() < consts.CROSS_PROB:
-                chromosome1, chromosome2 = cross(chromosome1, chromosome2)  
+                chromosome1, chromosome2 = cross(chromosome1, chromosome2)
+                if type(chromosome1) == list or type(chromosome2) == list: # DEBUGGING
+                    raise ValueError("Cross returns a list")  
+
             tmp_pop[i] = chromosome1
             tmp_pop[i+1] = chromosome2
 
@@ -92,29 +100,37 @@ def run_ga(
             chromosome.mutate(mutationrate = mutation_rate, creeprate = consts.CREEP_RATE)
             mutated_chromosome = chromosome
 
+            if type(mutated_chromosome) == list: # DEBUGGING
+                raise ValueError("Mutation returns a list")
+
             tmp_pop[i] = mutated_chromosome
 
         tmp_pop = insert_best_individual(tmp_pop, best_individual, consts.N_COPIES)
         population = copy.deepcopy(tmp_pop)
 
         # Validation
-        score_matr, time_matr = decode_population(population, validation_courses, consts.MAX_FRAMES, stochastic_spawning)
-        fitness, best_index = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
-        best_individual_validation = copy.deepcopy(population[best_index])
-        max_validation_fitness = fitness[best_index]
+        if generation%5==0:
+            score_matr, time_matr = decode_population(population, validation_courses, consts.MAX_FRAMES, stochastic_spawning)
+            fitness, best_index = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
+            best_individual_validation = copy.deepcopy(population[best_index])
+            max_validation_fitness = fitness[best_index]
 
-        if max_validation_fitness > best_fitness_ever:
-            best_fitness_ever = max_validation_fitness
-            #print('Best fitness ever: {}'.format(round(best_fitness_ever,2)))
-            best_individual_ever = copy.deepcopy(best_individual_validation)
-            if path:
-                print('Saving network to: {}'.format(path))
-                best_individual_ever.save(path = path)
+            if max_validation_fitness > best_fitness_ever:
+                best_fitness_ever = max_validation_fitness
+                #print('Best fitness ever: {}'.format(round(best_fitness_ever,2)))
+                best_individual_ever = copy.deepcopy(best_individual_validation)
+                if path:
+                    print('Saving network to: {}'.format(path))
+                    best_individual_ever.save(path = path)
 
-        
-        print('Generation {}: Training fitness: {}, Validation fitness: {}'.format(
-            generation, round(max_train_fitness,2), round(max_validation_fitness,2) )
-        )
+            
+            print('Generation {}: Training fitness: {}, Validation fitness: {}'.format(
+                generation, round(max_train_fitness,2), round(max_validation_fitness,2) )
+            )
+        else:
+            print('Generation {}: Training fitness: {}'.format(
+                generation, round(max_train_fitness,2))
+            )
 
     # Get results from trainging courses
     score_matr, time_matr = decode_population([best_individual_ever], training_courses, consts.MAX_FRAMES, stochastic_spawning)
@@ -139,21 +155,6 @@ def run_ga(
     print("Fitness:", round(test_fitness, 2))
     print("Score:", round(mean_test_score))
 
-
-    """
-    res_line = ""
-    res_line += "Generations: {}\n".format(generations)
-    res_line += "Population size: {}\n".format(population_size)
-    res_line += "Network shape: {}\n".format(network_shape)
-    res_line += "Saved as: {}\n".format(path)
-    res_line += "TRAINING:   mean score: {}, fitness: {}, courses {}\n".format(mean_train_score, train_fitness, training_courses)
-    res_line += "VALIDATION: mean score: {}, fitness: {}, courses {}\n".format(mean_val_score, val_fitness, validation_courses)
-    res_line += "TESTING:    mean score: {}, fitness: {}, courses {}\n".format(mean_test_score, test_fitness, testing_courses)
-    res_line += "\n"
-
-    with open('ga_results_info.txt', 'a') as f:
-        f.write(res_line)
-    """
 
 
     res_line = "{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}\n".format(
@@ -216,15 +217,10 @@ def decode_chromosome(chromosome, courses, frames, stochastic_spawning):
             fps=5000,
             stochastic_spawning = stochastic_spawning
         )
-        #print('score:', score)
-        #print('play_time:', play_time)
-
 
         scores.append(score)
         play_times.append(play_time)
-    #print('---')
-    #print('scores:', scores)
-    #print('play_times:', play_times)
+
 
 
     return np.array(scores), np.array(play_times)
@@ -325,6 +321,7 @@ def cross(chromosome1, chromosome2):
         network1.Theta[i], network2.Theta[i] = t1, t2
 
     chromosome1, chromosome2 = network1, network2
+
     return chromosome1, chromosome2
 
 

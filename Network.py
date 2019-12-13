@@ -68,8 +68,7 @@ class Network:
             self.W[w]=self.W[w]+creeprate*(2*np.random.random(size=self.W[w].shape)-1)*np.random.choice([1,0], size=self.W[w].shape,p=[mutationrate, 1-mutationrate])
         for t in range(len(self.Theta)):
             self.Theta[t]=self.Theta[t]+creeprate*(2*np.random.random(size=self.Theta[t].shape)-1)*np.random.choice([1,0], size=self.Theta[t].shape,p=[mutationrate, 1-mutationrate])
-
-        return
+        return self
 
     def save(self, path):
         """ 

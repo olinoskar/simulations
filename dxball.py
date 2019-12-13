@@ -127,8 +127,17 @@ class Bricka:
         
         otherInputs = [x[0],x[1],v[0],v[1],self.paddle.left]
 
-        print("self.network",self.network)
-        nbr_input_neurons = self.network.W[0].shape[1]
+        
+        try:
+            nbr_input_neurons = self.network.W[0].shape[1]
+        except Exception as e:
+            print("self.network",self.network)
+            print('Error!!!!')
+            print(str(e))
+            import sys
+            sys.exit()
+
+
         
         if nbr_input_neurons == 77:
             inputs = brickInputs + otherInputs     
@@ -287,6 +296,7 @@ class Bricka:
             #print(phi)
 
             v = 0.1 if np.random.random() < 0.5 else -0.1
+            v = 0.1
             tol = 0.5
             if np.abs(phi-np.pi/2)<tol:
                 phi+=v
