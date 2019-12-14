@@ -8,6 +8,8 @@ import constants as consts
 import argparse
 import multiprocessing as mp
 import sys
+import os
+import matplotlib.pyplot as plt
 
 
 
@@ -24,38 +26,51 @@ Arguments:
 
 def main():
 
-    import os
     os.environ["SDL_VIDEODRIVER"] = "dummy"
+
 
     parser = argparse.ArgumentParser()
     parser.add_argument('path', help='Name of the first file')
     parser.add_argument("neurons", type=int, help="Number of neurons in hidden layers")
     parser.add_argument("-i","--input_neurons", type=int, default = 77,
         help="Number of neurons in input layer. Default: 77. Allowed: [5, 77]")
+    parser.add_argument("-hl", "--hidden_layers", type=int,
+        help = "Number of hidden layers. Will iterate from 0 to 5 hidden layers if not passed.")
     parser.add_argument('-s', "--stochastic_spawning", type=str2bool, nargs='?',
         const=True, default=True,
-        help="Stochastic spwaning or not (true or false), default: true")
+        help="Stochastic spawning or not (true or false), default: true")
     parser.add_argument('-g', "--generations", type=int, default=500, help="Number of generations")
     parser.add_argument('-ps', "--pop_size", type=int, default=30, help="Size of the population")
     args = parser.parse_args()
 
 
     inp = args.input_neurons
-    hidden = args.neurons
+    
     if inp not in [5,77]:
         print("Number of input neurons must be either 5 or 77. Exiting!")
         sys.exit()
 
-    layouts = [
-        [inp, 3],
-        [inp, hidden, 3],
-        [inp, hidden, hidden, 3],
-        [inp, hidden, hidden, hidden, 3],
-        [inp, hidden, hidden, hidden, hidden, 3],
-        [inp, hidden, hidden, hidden, hidden, hidden, 3],
-    ]
 
-    for n, layout in enumerate(layouts):
+
+    hidden = args.neurons
+    if args.hidden_layers:
+        layout = []
+        for _ in range(args.hidden_layers):
+            layout.append(hidden)
+        layout = [inp] + layout + [3]
+        layouts = [layout]
+    else:
+        layouts = [
+            [inp, 3],
+            [inp, hidden, 3],
+            [inp, hidden, hidden, 3],
+            [inp, hidden, hidden, hidden, 3],
+            [inp, hidden, hidden, hidden, hidden, 3],
+            [inp, hidden, hidden, hidden, hidden, hidden, 3],
+        ]
+
+    for layout in layouts:
+        n = len(layout)-2
 
         path = '{}_{}'.format(args.path, n)
         print('\nTraining\n--------\nLayout:', layout)
@@ -69,17 +84,6 @@ def main():
             fitness_function = 'score',
             stochastic_spawning = args.stochastic_spawning
         )
-
-
-
-
-
-    return
-
-
-
-
-    run_ga(path = args.path)
 
 
 
@@ -119,6 +123,8 @@ def run_ga(
     best_validation_fitness = 0
     best_validation_generation = 0
     best_individual_ever = None
+
+    fname_data = os.path.join(path, 'train_data.txt')
     
        
     # Initiate mutation as 1/m, where m is the number of genes
@@ -150,6 +156,10 @@ def run_ga(
             if path:
                 print('Saving network to: {}'.format(path))
                 best_individual_ever.save(path = path)
+
+                path2 = os.path.join(path, 'network_generation_{}'.format(generation))
+                best_individual_ever.save(path = path2)
+
 
 
         # Create a temporary population and perform tournament selection, crossover and mutation
@@ -206,6 +216,12 @@ def run_ga(
                 generation, round(max_train_fitness,2))
             )
 
+        with open(fname_data, 'a') as f:
+            line = '{}, {}, {}\n'.format(generation, best_train_fitness_ever, max_train_fitness)
+            f.write(line)
+
+
+
     # Get results from training courses
     score_matr, time_matr = decode_population([best_individual_ever], training_courses, consts.MAX_FRAMES, stochastic_spawning)
     fitness,_ = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
@@ -252,7 +268,11 @@ def run_ga(
         f.write(res_line)
 
 
+
     
+#################################################################################
+# GA functions
+#################################################################################
 
 def initialize(pop_size, network_shape):
     """ Initialize population of Neural Networks """
@@ -411,8 +431,9 @@ def insert_best_individual(population, best_individual, n_copies):
 
 
 
-##################################################
+#################################################################################
 # Helper functions
+#################################################################################
 
 def time_effect(played_time, frames):
     return 1 - 1/(1+np.exp(-played_time/frames+1))
@@ -426,6 +447,7 @@ def str2bool(v): # for parsing of stochastic spawning argument
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
 
 
 
