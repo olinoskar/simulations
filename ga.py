@@ -110,9 +110,11 @@ def run_ga(
     """
 
 
-    training_courses = [666, 666, 666]
-    validation_courses = [666, 666, 666] 
-    testing_courses = [666, 666, 666] 
+    n = 5 if stochastic_spawning else 1
+
+    training_courses = [666]*n
+    validation_courses = [666]*n
+    testing_courses = [666]*n 
 
     population = initialize(population_size, network_shape)
 
@@ -196,7 +198,7 @@ def run_ga(
         population = copy.deepcopy(tmp_pop)
 
         # Run the best individual on the validation courses (sometimes)
-        if generation > 100 and generation%5==0:
+        if generation%5==0:
             score_matr, time_matr = decode_population([best_individual], validation_courses, consts.MAX_FRAMES, stochastic_spawning)
             fitness,_ = evaluate_population(score_matr, time_matr, time_pen, consts.MAX_FRAMES, fitness_function)
             val_fitness = fitness[0]
