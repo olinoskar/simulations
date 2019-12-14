@@ -1,6 +1,7 @@
 from Network import Network
 from dxball import play_game
-
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 HEADER = '\033[95m'
@@ -39,7 +40,7 @@ def test_network_save_and_load():
 
 def test_play_game_with_network():
 
-    path = 'results/oskar7'
+    path = 'results/oskar12_2/network_generation_16'
 
     print_header('Testing game with network {}'.format(path))
 
@@ -62,6 +63,26 @@ def test_play_game_with_network():
         print_failure('TEST FAILED!')
         print('Reason: {}'.format(str(e)))
         return False
+
+def plot_training_evolution(fnames, labels, saveas):
+
+    fig, ax = plt.subplots()
+    ax.set_xlabel('Generation', fontsize = 15)
+    ax.set_ylabel('Score', fontsize = 15)
+    ax.set_title("Score during training")
+
+    for fname, label in zip(fnames, labels):
+        data = np.genfromtxt(fname, delimiter=',')
+        ax.plot(data[:,0], data[:,2], label = label, linewidth=3)
+
+    ax.legend()
+    fig.saveas(saveas)
+    plt.show()
+
+
+
+
+
 
 
 

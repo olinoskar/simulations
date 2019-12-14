@@ -89,3 +89,4 @@ ResultsGustaf/Stoch=False_inputs=77_n_hidden_layers=1_neurons=20, 1760.0, 1760.0
 ResultsGustaf/Stoch =True_inputs=5_n_hidden_layers=3_neurons=20, 417.0, 470.0, 257.0, 416.67, 470.0, 256.67, 99, 40, score, True, 3, [5, 20, 20, 20, 3], 0.0010276917886055399
 ResultsGustaf/Stoch=True_inputs=77_n_hidden_layers=3_neurons=10, 1183.0, 1120.0, 1490.0, 1183.33, 1120.0, 1490.0, 99, 40, score, True, 3, [77, 10, 10, 10, 3], 0.0010182288930919933
 ResultsGustaf/Stoch=False_inputs=5_n_hidden_layers=3_neurons=20, 1970.0, 1970.0, 1970.0, 1970.0, 1970.0, 1970.0, 99, 40, score, False, 3, [5, 20, 20, 20, 3], 0.0010276917886055399
+results/oskar12_2, 160.0, 150.0, 160.0, 160.0, 150.0, 160.0, 19, 10, score, True, 3, [77, 10, 10, 3], 0.15065204284126993
