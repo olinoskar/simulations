@@ -14,8 +14,8 @@ def main():
 	# Params for loading network
 	stoch_bool_network = True
 	inputs = 77
-	nbrHiddenLayers = 1
-	nbrNeuronsPerHidden = 5
+	nbrHiddenLayers = 2
+	nbrNeuronsPerHidden = 10
 
 	network.load(path='ResultsGustaf/'
 						+ 'Stoch=' + str(stoch_bool_network)
