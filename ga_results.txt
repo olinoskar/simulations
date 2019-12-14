@@ -36,3 +36,25 @@ inputs=5_n_hidden_layers=5_neurons=5, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 0, 20,
 inputs=5_n_hidden_layers=1_neurons=5, 60.0, 60.0, 60.0, 60.0, 60.0, 60.0, 0, 20, score, True, 3, [5, 5, 3], 0.9999999999
 inputs=5_n_hidden_layers=1_neurons=5, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 0, 20, score, True, 3, [5, 5, 3], 0.9999999999
 inputs=5_n_hidden_layers=2_neurons=5, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 0, 20, score, True, 3, [5, 5, 5, 3], 0.9999999999
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=2_neurons=5, 230.0, 233.0, 230.0, 230.0, 233.33, 230.0, 29, 20, score, True, 3, [5, 5, 5, 3], 0.06784373287692003
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=3_neurons=5, 330.0, 360.0, 467.0, 330.0, 360.0, 466.67, 29, 20, score, True, 3, [5, 5, 5, 5, 3], 0.06428247931566647
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=2_neurons=10, 860.0, 977.0, 1273.0, 860.0, 976.67, 1273.33, 29, 20, score, True, 3, [5, 10, 10, 3], 0.05994932843079145
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=3_neurons=10, 787.0, 757.0, 810.0, 786.67, 756.67, 810.0, 29, 20, score, True, 3, [5, 10, 10, 10, 3], 0.05821810823532095
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=2_neurons=20, 1130.0, 1227.0, 1007.0, 1130.0, 1226.67, 1006.67, 29, 20, score, True, 3, [5, 20, 20, 3], 0.05668159484911036
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=2_neurons=5, 1880.0, 1880.0, 1880.0, 1880.0, 1880.0, 1880.0, 29, 20, score, False, 3, [5, 5, 3], 0.07585655338974054
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=2_neurons=5, 1103.0, 937.0, 937.0, 1103.33, 936.67, 936.67, 29, 20, score, True, 3, [5, 5, 5, 3], 0.06784373287692003
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=3_neurons=5, 1150.0, 1150.0, 1150.0, 1150.0, 1150.0, 1150.0, 29, 20, score, False, 3, [5, 5, 5, 3], 0.06784373287692003
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=3_neurons=5, 1143.0, 1243.0, 803.0, 1143.33, 1243.33, 803.33, 29, 20, score, True, 3, [5, 5, 5, 5, 3], 0.06428247931566647
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=4_neurons=5, 1330.0, 1330.0, 1330.0, 1330.0, 1330.0, 1330.0, 29, 20, score, False, 3, [5, 5, 5, 5, 3], 0.06428247931566647
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=2_neurons=10, 930.0, 1363.0, 1350.0, 930.0, 1363.33, 1350.0, 29, 20, score, True, 3, [5, 10, 10, 3], 0.05994932843079145
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=2_neurons=10, 230.0, 230.0, 230.0, 230.0, 230.0, 230.0, 29, 20, score, False, 3, [5, 10, 3], 0.06577590822845023
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=3_neurons=10, 1057.0, 1137.0, 900.0, 1056.67, 1136.67, 900.0, 29, 20, score, True, 3, [5, 10, 10, 10, 3], 0.05821810823532095
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=3_neurons=10, 250.0, 250.0, 250.0, 250.0, 250.0, 250.0, 29, 20, score, False, 3, [5, 10, 10, 3], 0.05994932843079145
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=4_neurons=10, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 29, 20, score, False, 3, [5, 10, 10, 10, 3], 0.05821810823532095
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=2_neurons=20, 160.0, 160.0, 160.0, 160.0, 160.0, 160.0, 29, 20, score, False, 3, [5, 20, 3], 0.06048770093072415
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=2_neurons=20, 933.0, 1590.0, 1107.0, 933.33, 1590.0, 1106.67, 29, 20, score, True, 3, [5, 20, 20, 3], 0.05668159484911036
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=3_neurons=20, 1160.0, 1160.0, 1160.0, 1160.0, 1160.0, 1160.0, 29, 20, score, False, 3, [5, 20, 20, 3], 0.05668159484911036
+ResultsGustaf/Stoch=True/inputs=5_n_hidden_layers=3_neurons=20, 833.0, 1010.0, 1120.0, 833.33, 1010.0, 1120.0, 29, 20, score, True, 3, [5, 20, 20, 20, 3], 0.056000737162956574
+ResultsGustaf/Stoch=False/inputs=5_n_hidden_layers=4_neurons=20, 1350.0, 1350.0, 1350.0, 1350.0, 1350.0, 1350.0, 29, 20, score, False, 3, [5, 20, 20, 20, 3], 0.056000737162956574
+ResultsGustaf/Stoch=True/inputs=77_n_hidden_layers=2_neurons=5, 823.0, 653.0, 1160.0, 823.33, 653.33, 1160.0, 29, 20, score, True, 3, [77, 5, 5, 3], 0.05730632507923826
+ResultsGustaf/Stoch=True/inputs=77_n_hidden_layers=3_neurons=5, 230.0, 223.0, 240.0, 230.0, 223.33, 240.0, 29, 20, score, True, 3, [77, 5, 5, 5, 3], 0.057159972193159346

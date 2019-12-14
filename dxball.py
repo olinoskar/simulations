@@ -52,8 +52,11 @@ class Bricka:
         pygame.display.set_caption("dx ball(Python GameMakers)")
     
         self.clock = pygame.time.Clock()
-    
-        self.font=None
+        
+        if pygame.font:
+          self.font=pygame.font.Font(None,30)
+        else:
+          self.font=None
           
         self.init_game(course_nbr)
         
@@ -76,6 +79,8 @@ class Bricka:
         self.velocity_exponents = []   
         self.velocity_factor = 1  
         self.last_frame_for_destruction = 0
+        self.maximum_nbr_frames = 0
+        self.fps = 0
         
         self.paddle= pygame.Rect(300,PADDLE_Y,PADDLE_WIDTH,PADDLE_HEIGHT)
         self.ball=   pygame.Rect(300,PADDLE_Y-BALL_DIAMETER,BALL_DIAMETER,BALL_DIAMETER)
@@ -201,8 +206,6 @@ class Bricka:
         if self.ball.top < 0:
             self.ball.top=0
             self.ball_vel[1]=-self.ball_vel[1]
-        
-    
     
     def handle_collisions(self):
         
@@ -312,43 +315,22 @@ class Bricka:
             #self.pad_velocity=self.pad_velocity*self.velocity_exponents[0]
             self.ball_vel[0] = v_new*np.cos(phi)
             self.ball_vel[1] = -v_new*np.sin(phi) 
-            
-#            if np.abs(self.ball_vel[0]) < 0.1:
-#                self.ball_vel[0] = 1
-                
-            ##### End dynamic hits #####
                 
         elif self.ball.top > self.paddle.top:
             self.lives-=1
             if self.lives>0:
                 self.state=STATE_BALL_IN_PADDLE
             else:
-                self.state=STATE_GAME_OVER
-
-                
-    def apply_brownian_motion(self):
-        r = -1 + 2*np.random.rand()
-        
-        if (np.abs(r) < 0.10 and self.ball.top > 480/3 and self.ball.top < 480/2):
-            v = np.linalg.norm(self.ball_vel)
-            
-            vx = self.ball_vel[0]
-            vy = self.ball_vel[1]
-            
-            v_new = v + self.velocity_terms[0]
-            
-            d_phi = (-1 + 2*np.random.rand())*np.pi/10            
-            phi = np.arctan(vy/vx)
-            #if vx < 0:
-            #    phi = np.pi - phi
-            
-            self.ball_vel[0] = v_new*np.cos(phi + d_phi)
-            self.ball_vel[1] = -v_new*np.sin(phi + d_phi)              
+                self.state=STATE_GAME_OVER             
 
     def show_stats(self):
+        current_time = self.frames_run
+        max_time = self.maximum_nbr_frames
+        time_left = max_time - current_time
+
         if self.font:
-            font_surface=self.font.render("Score:" + str(self.score)+" Time:"+str(np.floor(self.frames_run/10)),False,WHITE)
-            self.screen.blit(font_surface,(205,5))
+            font_surface=self.font.render("Score:" + str(self.score)+", " +" Time remaining:"+str(np.floor(time_left)),False,WHITE)
+            self.screen.blit(font_surface,(160,5))
 
     def show_message(self,message):
         if self.font:
@@ -388,6 +370,8 @@ class Bricka:
                               initial_velocity,velocity_exponents,
                               stochastic_spawning,velocity_factor):
         
+        self.maximum_nbr_frames = max_nbr_frames
+        self.fps = fps
         self.initial_velocity = initial_velocity * velocity_factor
         self.pad_velocity = self.pad_velocity * velocity_factor
         self.ball_vel[0] = velocity_factor*self.ball_vel[0]
