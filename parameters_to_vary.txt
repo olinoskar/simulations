@@ -1,0 +1,7 @@
+inputs = [5,77]
+nbr_neurons_per_hidden_layer = [5,10,20,50]
+nbr_hidden_layers = [0,1,2,3,4,5]
+nbr_output_neurons = 3
+
+Two game modes: Stochastic or non-stochastic.
+
