@@ -11,11 +11,11 @@ Run these stochastic modes:
 # python ga3hidden.py "ResultsGustafFinal/i=77_s=False_n=20" 20 -i=77 -s=False -g=300 DONE
 
 # python ga0hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 DONE
-python ga1hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 RUNNING ON KERNEL 2
-python ga2hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 RUNNING ON KERNEL 3
-python ga3hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 RUNNING ON KERNEL 4
+# python ga1hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 DONE
+# python ga2hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 DONE
+# python ga3hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 DONE
 
-python ga0hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 RUNNING ON KERNEL 1
-python ga1hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 QUEUED ON KERNEL 1
-python ga2hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 QUEUED ON KERNEL 1
-python ga3hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 QUEUED ON KERNEL 1
+python ga0hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 RUNNING
+python ga1hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 RUNNING
+# python ga2hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 DONE
+# python ga3hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 DONE
