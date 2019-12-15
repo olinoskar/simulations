@@ -13,6 +13,7 @@ def main():
 	parser.add_argument('-i', "--inputs", type=int, default=5, help='inputs')
 	parser.add_argument('-s',"--stochastic_spawning", type=int, default = 0)
 	parser.add_argument('-hl',"--hidden_layers", type=int, default=0)
+	parser.add_argument('-p',"--pause_time", type=int, default=0, help='Pause the game for [] seconds before playing. Good for recording purposes.')
 	args = parser.parse_args()
 
 	# Params for loading network
@@ -21,6 +22,7 @@ def main():
 	nbr_hidden_layers = args.hidden_layers
 	nbr_neurons_per_hidden = 20  # default = 20
 	network_generation = args.network_generation
+	pause_time = args.pause_time
 
 	network.load(path='ResultsGustafFinal/'
 						+ 'i=' + str(inputs)
@@ -41,7 +43,7 @@ def main():
 
 	score, frames_run = play_game(network, use_network=use_network, display_game=1, fps=fps,
 				  max_nbr_frames=max_nbr_frames, stochastic_spawning = (stoch_bool_game==1),
-				  network_generation=network_generation)
+				  network_generation=network_generation,pause_time=pause_time)
 
 	print("Score="+str(score))
 

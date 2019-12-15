@@ -61,6 +61,7 @@ class Bricka:
         self.init_game(course_nbr)
         
     def init_game(self,course_nbr):
+        self.pause_time = 0
         self.network_generation = 0
         self.brownian_motion = 0
         self.brick_state = []
@@ -117,10 +118,32 @@ class Bricka:
             pygame.draw.rect(self.screen,RED,brick)
         for brick in self.blue_bricks:
             pygame.draw.rect(self.screen,(0,0,255),brick)
+
+    def paused(self,pause):
+
+        while pause:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                    
+            pygame.display.update()
+            self.clock.tick(15) 
+            keys=pygame.key.get_pressed()
+            if self.font:
+                font_surface=self.font.render(
+                    "Game is paused. Press 'o' to unpause.",
+                    False, WHITE)
+                self.screen.blit(font_surface,(140,220))
+        
+            if keys[pygame.K_o]:
+                break
     
     def check_input(self,course_nbr):  # Edit this to take input from neural network
         keys=pygame.key.get_pressed()
         
+        if keys[pygame.K_p]:
+            self.paused(pause=True)
         
         boost_factor = 2  # 1 => no extra effect
         
@@ -377,8 +400,7 @@ class Bricka:
                               display_game,fps,max_nbr_frames,
                               initial_velocity,velocity_exponents,
                               stochastic_spawning,velocity_factor,
-                              network_generation):
-        
+                              network_generation, pause_time):
         self.network_generation = network_generation
         self.maximum_nbr_frames = max_nbr_frames
         self.fps = fps
@@ -393,6 +415,7 @@ class Bricka:
         self.use_network = use_network
 
         while 1:
+
             for event in pygame.event.get():
                 if event.type==pygame.QUIT:
                     pygame.quit()
@@ -439,7 +462,7 @@ class Bricka:
     
 def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,
               max_nbr_frames=1e5, initial_velocity = 5, velocity_exponents = [1.010, 1.025, 1.050],
-              stochastic_spawning = True, velocity_factor = 1, network_generation=0):
+              stochastic_spawning = True, velocity_factor = 1, network_generation=0, pause_time=0):
     '''
     [] Courses are defined as 'level<course_nbr>.csv'. The standard course is 666.
         
@@ -460,6 +483,6 @@ def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,
                               display_game,fps,max_nbr_frames,
                               initial_velocity,velocity_exponents,
                               stochastic_spawning,velocity_factor,
-                              network_generation)
+                              network_generation,pause_time)
     
     return score, frames_run
