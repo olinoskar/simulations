@@ -332,11 +332,13 @@ class Bricka:
         v = '{0:.2f}'.format(np.linalg.norm(self.ball_vel))
 
         if self.font:
-            font_surface=self.font.render("Score:" + str(self.score)
+            font_surface=self.font.render(
+                "Gen: " + str(self.network_generation)
+                + "   Score: " + str(self.score)
                 + "   |v| = " + str(v)
-                + "   Time remaining: " + str(np.int(time_left))
-                ,False,WHITE)
-            self.screen.blit(font_surface,(120,5))
+                + "   Time remaining: " + str(np.int(time_left)),
+                False, WHITE)
+            self.screen.blit(font_surface,(70,5))
 
     def show_message(self,message):
         if self.font:
