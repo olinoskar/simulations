@@ -12,16 +12,16 @@ def main():
 	args = parser.parse_args()
 
 	# Params for loading network
-	stoch_bool_network = True
 	inputs = 77
-	nbrHiddenLayers = 2
-	nbrNeuronsPerHidden = 10
+	stoch_bool_network = True
+	nbr_hidden_layers = 2
+	nbr_neurons_per_hidden = 20  # default = 20
 
-	network.load(path='ResultsGustaf/'
-						+ 'Stoch=' + str(stoch_bool_network)
-						+ '_inputs=' + str(inputs)
-						+ '_n_hidden_layers=' + str(nbrHiddenLayers)
-						+ '_neurons=' + str(nbrNeuronsPerHidden))
+	network.load(path='ResultsGustafFinal/'
+						+ 'i=' + str(inputs)
+						+ '_s=' + str(stoch_bool_network)
+						+ '_n=' + str(nbrNeuronsPerHidden)
+						+ '_' + str(nbr_hidden_layers))
 
 	# Params for playing the game
 	fps = args.fps

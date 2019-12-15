@@ -64,9 +64,7 @@ def main():
             [inp, 3],
             [inp, hidden, 3],
             [inp, hidden, hidden, 3],
-            [inp, hidden, hidden, hidden, 3],
-            [inp, hidden, hidden, hidden, hidden, 3],
-            [inp, hidden, hidden, hidden, hidden, hidden, 3],
+            [inp, hidden, hidden, hidden, 3]
         ]
 
     for layout in layouts:
@@ -77,7 +75,6 @@ def main():
         print('Path:', path)
         print('=================\n')
         run_ga(
-            path=path,
             path=path,
             network_shape=layout,
             generations = args.generations,
