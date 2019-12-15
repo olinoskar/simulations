@@ -14,14 +14,16 @@ def main():
 	# Params for loading network
 	inputs = 77
 	stoch_bool_network = True
-	nbr_hidden_layers = 2
+	nbr_hidden_layers = 0
 	nbr_neurons_per_hidden = 20  # default = 20
+	network_generation = 22
 
 	network.load(path='ResultsGustafFinal/'
 						+ 'i=' + str(inputs)
 						+ '_s=' + str(stoch_bool_network)
-						+ '_n=' + str(nbrNeuronsPerHidden)
-						+ '_' + str(nbr_hidden_layers))
+						+ '_n=' + str(nbr_neurons_per_hidden)
+						+ '_' + str(nbr_hidden_layers)
+						+ '/network_generation_' + str(network_generation))
 
 	# Params for playing the game
 	fps = args.fps
