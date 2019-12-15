@@ -49,7 +49,7 @@ class Bricka:
     def __init__(self,course_nbr):
         pygame.init()
         self.screen=pygame.display.set_mode(SCREEN_SIZE)
-        pygame.display.set_caption("dx ball(Python GameMakers)")
+        pygame.display.set_caption("DX-ball")
     
         self.clock = pygame.time.Clock()
         
