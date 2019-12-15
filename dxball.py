@@ -61,6 +61,7 @@ class Bricka:
         self.init_game(course_nbr)
         
     def init_game(self,course_nbr):
+        self.network_generation = 0
         self.brownian_motion = 0
         self.brick_state = []
         self.t0 = time.time()
@@ -327,10 +328,15 @@ class Bricka:
         current_time = self.frames_run
         max_time = self.maximum_nbr_frames
         time_left = max_time - current_time
+        gen = self.network_generation
+        v = '{0:.2f}'.format(np.linalg.norm(self.ball_vel))
 
         if self.font:
-            font_surface=self.font.render("Score:" + str(self.score)+", " +" Time remaining:"+str(np.floor(time_left)),False,WHITE)
-            self.screen.blit(font_surface,(160,5))
+            font_surface=self.font.render("Score:" + str(self.score)
+                + "   |v| = " + str(v)
+                + "   Time remaining: " + str(np.int(time_left))
+                ,False,WHITE)
+            self.screen.blit(font_surface,(120,5))
 
     def show_message(self,message):
         if self.font:
@@ -368,8 +374,10 @@ class Bricka:
     def run(self,network,use_network,course_nbr,
                               display_game,fps,max_nbr_frames,
                               initial_velocity,velocity_exponents,
-                              stochastic_spawning,velocity_factor):
+                              stochastic_spawning,velocity_factor,
+                              network_generation):
         
+        self.network_generation = network_generation
         self.maximum_nbr_frames = max_nbr_frames
         self.fps = fps
         self.initial_velocity = initial_velocity * velocity_factor
@@ -429,7 +437,7 @@ class Bricka:
     
 def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,
               max_nbr_frames=1e5, initial_velocity = 5, velocity_exponents = [1.010, 1.025, 1.050],
-              stochastic_spawning = True, velocity_factor = 1):
+              stochastic_spawning = True, velocity_factor = 1, network_generation=0):
     '''
     [] Courses are defined as 'level<course_nbr>.csv'. The standard course is 666.
         
@@ -449,6 +457,7 @@ def play_game(network,use_network=1,course_nbr=666,display_game=0,fps=50,
     score, frames_run = b.run(network,use_network,course_nbr,
                               display_game,fps,max_nbr_frames,
                               initial_velocity,velocity_exponents,
-                              stochastic_spawning,velocity_factor)
+                              stochastic_spawning,velocity_factor,
+                              network_generation)
     
     return score, frames_run

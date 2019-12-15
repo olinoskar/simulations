@@ -27,7 +27,7 @@ def main():
 
 	# Params for playing the game
 	fps = args.fps
-	max_playtime = 500000
+	max_playtime = 200
 	max_nbr_frames = max_playtime*fps
 	stoch_bool_game = True
 	use_network = 1
@@ -36,7 +36,8 @@ def main():
 		fps = 50
 
 	score, frames_run = play_game(network, use_network=use_network, display_game=1, fps=fps,
-				  max_nbr_frames=max_nbr_frames, stochastic_spawning = (stoch_bool_game==1))
+				  max_nbr_frames=max_nbr_frames, stochastic_spawning = (stoch_bool_game==1),
+				  network_generation=network_generation)
 
 	print("Score="+str(score))
 
