@@ -351,17 +351,16 @@ class Bricka:
         current_time = self.frames_run
         max_time = self.maximum_nbr_frames
         time_left = max_time - current_time
+
         gen = self.network_generation
-        v = '{0:.2f}'.format(np.linalg.norm(self.ball_vel))
+        time_left = time_left/self.fps
+        vel = round(np.linalg.norm(self.ball_vel), 1)
 
         if self.font:
-            font_surface=self.font.render(
-                "Gen: " + str(self.network_generation)
-                + "   Score: " + str(self.score)
-                + "   |v| = " + str(v)
-                + "   Time remaining: " + str(np.int(time_left)),
-                False, WHITE)
-            self.screen.blit(font_surface,(70,5))
+            msg = "Gen: {},Score: {}, |v|: {}, Time remaining: {}s".format(gen, self.score, vel, int(time_left))
+            font_surface=self.font.render(msg,False,WHITE)
+            self.screen.blit(font_surface,(90,5))
+
 
     def show_message(self,message):
         if self.font:
