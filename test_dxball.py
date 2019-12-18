@@ -34,7 +34,7 @@ def main():
 
 	# Params for playing the game
 	fps = args.fps
-	max_playtime = 30
+	max_playtime = 200
 	max_nbr_frames = max_playtime*fps
 	stoch_bool_game = stoch_bool_network
 	use_network = args.use_network

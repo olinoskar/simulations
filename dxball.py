@@ -27,6 +27,7 @@ PADDLE_Y = SCREEN_SIZE[1]-PADDLE_HEIGHT-10
 BLACK=(0,0,0)
 WHITE=(255,255,255)
 BLUE=(0,0,255)
+#TEAL= (0,0,0)
 BRICK_COLOR= WHITE  #(200,200,200)
 RED = (255,0,0)
 
@@ -356,10 +357,22 @@ class Bricka:
         time_left = time_left/self.fps
         vel = round(np.linalg.norm(self.ball_vel), 1)
 
-        if self.font:
-            msg = "Gen: {},Score: {}, |v|: {}, Time remaining: {}s".format(gen, self.score, vel, int(time_left))
-            font_surface=self.font.render(msg,False,WHITE)
-            self.screen.blit(font_surface,(90,5))
+
+        xdist = 175
+        if self.use_network == 1:
+
+            if self.font:
+                msg = "AI score: {}, Ball velocity: {}".format(self.score, vel)
+                font_surface=self.font.render(msg,False,RED)
+                self.screen.blit(font_surface,(xdist,5))
+
+        else: ## Player
+
+            if self.font:
+                msg = "Player score: {}, Ball velocity: {}".format(self.score, vel)
+                font_surface=self.font.render(msg,False,WHITE)
+                self.screen.blit(font_surface,(xdist,5))
+
 
 
     def show_message(self,message):
@@ -442,7 +455,10 @@ class Bricka:
             self.draw_bricks()
     
             #draw paddle
-            pygame.draw.rect(self.screen,BLUE,self.paddle)
+            if use_network == 1:
+                pygame.draw.rect(self.screen,RED,self.paddle)
+            else:
+                pygame.draw.rect(self.screen,WHITE,self.paddle)
     
             #draw ball
             pygame.draw.circle(self.screen,WHITE,(self.ball.left+int(BALL_RADIUS),self.ball.top + BALL_RADIUS),BALL_RADIUS)
