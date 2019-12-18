@@ -14,6 +14,7 @@ def main():
 	parser.add_argument('-s',"--stochastic_spawning", type=int, default = 0)
 	parser.add_argument('-hl',"--hidden_layers", type=int, default=0)
 	parser.add_argument('-p',"--pause_time", type=int, default=0, help='Pause the game for [] seconds before playing. Good for recording purposes.')
+	parser.add_argument('-u',"--use_network", type=int, default=1, help='0 or 1. Use 0 human play.')
 	args = parser.parse_args()
 
 	# Params for loading network
@@ -36,7 +37,7 @@ def main():
 	max_playtime = 30
 	max_nbr_frames = max_playtime*fps
 	stoch_bool_game = stoch_bool_network
-	use_network = 1
+	use_network = args.use_network
 
 	if use_network == 0:
 		fps = 50

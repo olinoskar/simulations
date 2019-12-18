@@ -15,11 +15,12 @@ Run these stochastic modes:
 # python ga2hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 DONE
 # python ga3hidden.py "ResultsGustafFinal/i=5_s=True_n=20" 20 -i=5 -s=True -g=300 DONE
 
-python ga0hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 RUNNING
-python ga1hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 RUNNING
+# python ga0hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 DONE
+# python ga1hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 DONE
 # python ga2hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 DONE
 # python ga3hidden.py "ResultsGustafFinal/i=77_s=True_n=20" 20 -i=77 -s=True -g=300 DONE
 
 
-## run
+## test network
 python test_dxball.py -i=5 -s=1 -fps=150 -hl=2 -gen=33
+python test_dxball.py -i=77 -s=1 -fps=150 -hl=3 -gen=33
