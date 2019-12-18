@@ -212,7 +212,7 @@ def run_ga(
                 break;
   
             print('Generation {}: Training fitness: {}, Validation fitness: {}'.format(
-                generation, round(max_train_fitness,2), round(best_validation_fitness,2) )
+                generation, round(max_train_fitness,2), round(val_fitness,2) )
             )
         else:
             print('Generation {}: Training fitness: {}'.format(
